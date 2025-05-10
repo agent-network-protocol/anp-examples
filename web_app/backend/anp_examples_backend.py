@@ -22,6 +22,7 @@ from web_app.backend.models import (
     GetDocumentRequest,
     GetDocumentResponse,
 )
+from web_app.backend.hotel_order_api import router as hotel_order_router
 from anp_examples.simple_example import simple_crawl
 
 # Set up logging
@@ -37,6 +38,9 @@ app = FastAPI(
     description="Agent Network Explorer application based on ANP protocol",
     version="1.0.0",
 )
+
+# 注册酒店订单API路由器
+app.include_router(hotel_order_router)
 
 # Configure CORS
 app.add_middleware(
