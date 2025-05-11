@@ -14,13 +14,19 @@ function getBasePath() {
   const origin = window.location.origin;
   
   // Get application root path
-  // If there's a specific path identifier (like 'anp-explorer'), use it
+  // If there's a specific path identifier (like 'anp-explorer' or 'anp-demo'), use it
   const pathSegments = window.location.pathname.split('/').filter(segment => segment);
-  const appPathIndex = pathSegments.indexOf('anp-explorer');
   
-  // If we found the application identifier, return the path up to and including it
-  if (appPathIndex !== -1) {
-    return `${origin}/${pathSegments.slice(0, appPathIndex + 1).join('/')}`;
+  // Check for known application identifiers
+  const appIdentifiers = ['anp-explorer', 'anp-demo'];
+  
+  // Find the first matching app identifier in the path
+  for (const identifier of appIdentifiers) {
+    const appPathIndex = pathSegments.indexOf(identifier);
+    if (appPathIndex !== -1) {
+      // Found a valid app identifier, return the path up to and including it
+      return `${origin}/${pathSegments.slice(0, appPathIndex + 1).join('/')}`;
+    }
   }
   
   // If no application identifier is found, or if deployed at root, return just the origin
