@@ -284,7 +284,7 @@
             <span class="lang-zh">智能体 URL（选填）</span>
             <span class="lang-en">Agent URL (Optional)</span>
           </label>
-          <input type="text" id="agent-url" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 text-gray-900 dark:text-white" value="https://agent-weather.xyz/ad.json">
+          <input type="text" id="agent-url" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 text-gray-900 dark:text-white" value="">
         </div>
         
         <div class="text-right flex justify-end space-x-3">
@@ -690,9 +690,37 @@
     // 添加 marked 库支持 Markdown 渲染
     document.write('<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"><\/script>');
     
+    // 全局配置对象
+    let appConfig = {
+      agentDocUrl: ""
+    };
+    
+    // 从后端获取配置信息
+    async function fetchConfig() {
+      try {
+        const BASE_PATH = getBasePath();
+        const response = await fetch(`${BASE_PATH}/api/config`);
+        if (response.ok) {
+          const config = await response.json();
+          appConfig = config;
+          // 设置默认的agent-url输入框的值
+          document.getElementById('agent-url').value = config.agentDocUrl;
+        } else {
+          console.error('获取配置失败:', response.status);
+        }
+      } catch (error) {
+        console.error('获取配置出错:', error);
+      }
+    }
+    
+    // 页面加载完成后获取配置
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchConfig();
+    });
+    
     // 解析智能体文档结构
     function analyzeAgentDocStructure() {
-      const agentUrl = document.getElementById('agent-url').value.trim() || "https://agent-weather.xyz/ad.json";
+      const agentUrl = document.getElementById('agent-url').value.trim() || appConfig.agentDocUrl;
       
       // 获取当前语言设置
       const currentLang = localStorage.getItem('language') || 'zh';

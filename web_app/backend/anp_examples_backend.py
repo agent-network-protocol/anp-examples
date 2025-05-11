@@ -8,10 +8,16 @@ import logging
 import sys
 import asyncio
 from urllib.parse import urlparse
-from anp_examples.utils import set_log_color_level
+from dotenv import load_dotenv
 
 # Add project root directory to system path
-sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+
+# Now import after path correction
+from anp_examples.utils.log_base import set_log_color_level
+
+# Load environment variables from .env file
+load_dotenv()
 
 from anp_examples.utils.log_base import setup_logging
 from anp_examples.anp_tool import ANPTool
@@ -70,6 +76,16 @@ async def read_root():
     except Exception as e:
         logging.error(f"Error reading frontend page: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error reading frontend page: {str(e)}")
+
+
+@app.get("/api/config")
+async def get_config():
+    """Retrieve configuration information for frontend use"""
+    config = {
+        "agentDocUrl": os.environ.get("AGENT_DESCRIPTION_JSON_URL", "https://agent-weather.xyz/ad.json")
+    }
+    logging.info(f"Retrieved configuration: {config}")
+    return config
 
 
 @app.get("/agent-doc-tree.html", response_class=HTMLResponse)
@@ -362,8 +378,9 @@ if __name__ == "__main__":
 
     set_log_color_level(logging.INFO)
 
-    # Startup port
-    port = int(os.environ.get("PORT", 9871))
+    # Startup port - Read from .env file SERVER_PORT
+    port = int(os.environ.get("SERVER_PORT", 9871))
+    logging.info(f"Starting server on port: {port}")
 
     # Start uvicorn server
     uvicorn.run(
