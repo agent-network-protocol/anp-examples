@@ -246,6 +246,8 @@ async def simple_crawl(
             }
         )
 
+        logging.info("The AI Model response ......")
+
         # Check if the conversation should end
         if not response_message.tool_calls:
             logging.info("The model did not request any tool calls, ending crawl")
