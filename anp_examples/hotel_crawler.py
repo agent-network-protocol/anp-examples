@@ -19,6 +19,44 @@ from datetime import datetime
 
 current_date = datetime.now().strftime("%Y-%m-%d")
 
+# User memory and preferences
+class UserMemory:
+    """Class to store user memory and preferences"""
+    def __init__(self):
+        # Default user information
+        self.default_name = "李四"
+        self.default_phone = "13800000000"
+        self.default_payment_method = "支付宝"
+        self.default_room_preference = "大床房"
+        
+        # User preferences (can be updated based on interactions)
+        self.preferred_hotel_chains = ["全季酒店", "如家酒店", "汉庭酒店"]
+        self.preferred_locations = []
+        self.price_range = {"min": 0, "max": 1000}
+        self.preferred_amenities = ["免费Wi-Fi", "免费停车", "健身中心"]
+        self.previous_bookings = []
+        
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert user memory to dictionary format"""
+        return {
+            "default_info": {
+                "name": self.default_name,
+                "phone": self.default_phone,
+                "payment_method": self.default_payment_method,
+                "room_preference": self.default_room_preference
+            },
+            "preferences": {
+                "hotel_chains": self.preferred_hotel_chains,
+                "locations": self.preferred_locations,
+                "price_range": self.price_range,
+                "amenities": self.preferred_amenities
+            },
+            "booking_history": self.previous_bookings
+        }
+
+# Initialize user memory
+user_memory = UserMemory()
+
 HOTEL_BOOKING_PROMPT_TEMPLATE = """
 You are an intelligent hotel booking assistant. Your goal is to help users book hotel rooms by finding information about hotels and available rooms, and helping them complete the booking process.
 
@@ -38,12 +76,8 @@ You are an intelligent hotel booking assistant. Your goal is to help users book 
 7. You need to decide the search path yourself, don't wait for user instructions.
 8. Note: You can access up to 10 URLs, and must end the search after reaching this limit.
 
-## Default User Information
-If the user doesn't explicitly provide their personal information, use these defaults:
-- Name: 李四
-- Phone: 13800000000
-- Payment Method: 支付宝
-- Room Preference: 大床房
+## User Memory and Preferences
+{user_memory_section}
 
 ## Search Strategy
 1. First get the content of the initial URL to understand the hotel booking API structure.
@@ -176,7 +210,7 @@ async def handle_tool_call(
             )
 
 
-async def hotel_booking(
+async def hotel_crawler(
     user_input: str,
     task_type: str = "hotel_booking",
     did_document_path: Optional[str] = None,
@@ -233,9 +267,32 @@ async def hotel_booking(
             "crawled_documents": [],
         }
 
+    # Format user memory section for prompt
+    user_memory_section = (
+        "The system has the following memory about the user's preferences and history:\n"
+        f"1. Default Information:\n"
+        f"   - Name: {user_memory.default_name}\n"
+        f"   - Phone: {user_memory.default_phone}\n"
+        f"   - Payment Method: {user_memory.default_payment_method}\n"
+        f"   - Room Preference: {user_memory.default_room_preference}\n\n"
+        f"2. Hotel Preferences:\n"
+        f"   - Preferred Hotel Chains: {', '.join(user_memory.preferred_hotel_chains)}\n"
+        f"   - Preferred Amenities: {', '.join(user_memory.preferred_amenities)}\n"
+        f"   - Price Range: ¥{user_memory.price_range['min']} - ¥{user_memory.price_range['max']}\n"
+    )
+    
+    # Add booking history if available
+    if user_memory.previous_bookings:
+        user_memory_section += "\n3. Previous Bookings:\n"
+        for i, booking in enumerate(user_memory.previous_bookings, 1):
+            user_memory_section += f"   {i}. {booking.get('hotel_name', 'Unknown Hotel')} on {booking.get('date', 'Unknown Date')}\n"
+    
     # Create initial message
     formatted_prompt = HOTEL_BOOKING_PROMPT_TEMPLATE.format(
-        task_description=user_input, initial_url=initial_url, current_date=current_date
+        task_description=user_input, 
+        initial_url=initial_url, 
+        current_date=current_date,
+        user_memory_section=user_memory_section
     )
 
     messages = [
@@ -303,6 +360,9 @@ async def hotel_booking(
 
     # Final result generation
     try:
+        # Add user preference reminder
+        preference_reminder = "请记住使用我存储的用户偏好信息，特别是他们喜欢的酒店品牌和其他偏好。确保推荐的选项优先考虑用户的偏好。"
+        
         final_response = await client.chat.completions.create(
             model=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
             # 移除temperature和top_p参数，使用默认值
@@ -311,15 +371,17 @@ async def hotel_booking(
                 *messages,
                 {
                     "role": "user",
-                    "content": "Based on the information you've gathered, please provide your final response with a detailed text description of the hotel booking options, along with three JSON objects for hotel information, room information, and booking information as specified in the instructions.",
+                    "content": f"{preference_reminder} Based on the information you've gathered, please provide your final response with a detailed text description of the hotel booking options, along with three JSON objects for hotel information, room information, and booking information as specified in the instructions.",
                 },
             ],
         )
 
         final_content = final_response.choices[0].message.content
-        print(f"Final content: {final_content}")
         logging.info("Final response generated")
-
+        
+        # Memory is used but not updated automatically
+        # The system will use the pre-defined memory without automatic updates
+        
     except Exception as e:
         logging.error(f"Error generating final response: {str(e)}")
         final_content = f"Error generating final response: {str(e)}"
@@ -336,7 +398,16 @@ async def main():
     """Main function"""
     # Example usage
     query = "我想查询北京新国贸附近的酒店，两天后入住，住三晚"
-    result = await hotel_booking(user_input=query)
+    
+    # Simply display current user memory (without updating)
+    print("\nUser Memory Being Used:")
+    print(json.dumps(user_memory.to_dict(), ensure_ascii=False, indent=2))
+    
+    # Process hotel booking using pre-defined memory
+    result = await hotel_crawler(user_input=query)
+    
+    # Display results
+    print("\nSearch Result:")
     print(json.dumps(result["content"], ensure_ascii=False, indent=2))
 
 
