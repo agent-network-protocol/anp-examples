@@ -216,7 +216,7 @@ async def hotel_crawler(
     did_document_path: Optional[str] = None,
     private_key_path: Optional[str] = None,
     max_documents: int = 10,
-    initial_url: str = "https://hotel-booking.ai/ad.json",
+    initial_url: str = "https://agent-search.ai/ad.json",
 ) -> Dict[str, Any]:
     """
     Hotel booking logic: let the model decide the search path autonomously
