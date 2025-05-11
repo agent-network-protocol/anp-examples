@@ -8,6 +8,7 @@ import logging
 import sys
 import asyncio
 from urllib.parse import urlparse
+from anp_examples.utils import set_log_color_level
 
 # Add project root directory to system path
 sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
@@ -358,6 +359,8 @@ async def get_document(request: GetDocumentRequest):
 
 if __name__ == "__main__":
     import uvicorn
+
+    set_log_color_level(logging.INFO)
 
     # Startup port
     port = int(os.environ.get("PORT", 9871))
