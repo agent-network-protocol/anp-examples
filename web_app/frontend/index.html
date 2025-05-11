@@ -12,6 +12,8 @@
   <link href="https://cdn.staticfile.org/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <!-- Mermaid -->
   <script src="https://cdn.jsdelivr.net/npm/mermaid@latest/dist/mermaid.min.js"></script>
+  <!-- 工具函数 -->
+  <script src="static/utils.js"></script>
   <style>
     :root {
       --primary-color: #4F46E5;
@@ -565,8 +567,8 @@
           progressBar.querySelector('.progress-percentage').textContent = `${progress.toFixed(2)}%`;
         }, updateInterval);
         
-        // 获取API基础路径（根据当前URL判断是否使用Nginx路径前缀）
-        const BASE_PATH = window.location.pathname.startsWith('/anp-explorer/') ? '/anp-explorer' : '';
+        // 获取API基础路径
+        const BASE_PATH = getBasePath();
         
         // 发送请求
         const response = await new Promise((resolve, reject) => {
@@ -696,7 +698,7 @@
       const currentLang = localStorage.getItem('language') || 'zh';
       
       // 获取API基础路径
-      const BASE_PATH = window.location.pathname.startsWith('/anp-explorer/') ? '/anp-explorer' : '';
+      const BASE_PATH = getBasePath();
       
       // 在新页面打开智能体文档树页面，并传递当前语言
       window.open(`${BASE_PATH}/agent-doc-tree.html?url=${encodeURIComponent(agentUrl)}&lang=${currentLang}`, '_blank');

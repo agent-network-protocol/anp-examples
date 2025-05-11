@@ -1,5 +1,6 @@
-// 根据当前URL判断是否使用Nginx路径前缀
-const BASE_PATH = window.location.pathname.startsWith('/anp-explorer/') ? '/anp-explorer' : '';
+// 引入工具函数
+// 使用getBasePath()获取API基础路径
+const BASE_PATH = getBasePath();
 
 // 定义API请求函数
 async function submitQuestion() {

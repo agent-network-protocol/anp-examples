@@ -6,6 +6,8 @@
     <title>智能体文档树结构 | Agent Document Structure</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <!-- 工具函数 -->
+    <script src="static/utils.js"></script>
     <style>
         #network-container {
             height: 80vh;
@@ -61,7 +63,7 @@
 <body>
     <div class="container mx-auto px-4 py-8">
         <nav class="flex justify-between items-center mb-8">
-            <button onclick="window.location.href='https://service.agent-network-protocol.com/anp-explorer/'" 
+            <button onclick="window.location.href=getBasePath()" 
                     class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
@@ -233,7 +235,7 @@
                 // 如果没有从文档列表中找到，再从API获取
                 if (!docContent) {
                     // 获取API基础路径
-                    const BASE_PATH = window.location.pathname.startsWith('/anp-explorer/') ? '/anp-explorer' : '';
+                    const BASE_PATH = getBasePath();
                     
                     // 从API获取文档内容
                     const response = await fetch(`${BASE_PATH}/api/get-document`, {
@@ -544,7 +546,7 @@
                 document.getElementById('loading').innerHTML = `
                     <div class="bg-white dark:bg-gray-800 rounded-lg p-6">
                         <p class="text-red-600 dark:text-red-400 text-lg mb-4">${currentLang === 'zh' ? '错误：缺少URL参数' : 'Error: Missing URL parameter'}</p>
-                        <button onclick="window.location.href='${window.location.pathname.startsWith('/anp-explorer/') ? '/anp-explorer/' : '/'}'" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                        <button onclick="window.location.href=getBasePath()" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
                             ${currentLang === 'zh' ? '返回首页' : 'Back to Home'}
                         </button>
                     </div>
@@ -555,7 +557,7 @@
             // 添加ESC键关闭功能
             const escKeyInitHandler = (e) => {
                 if (e.key === 'Escape') {
-                    window.location.href = window.location.pathname.startsWith('/anp-explorer/') ? '/anp-explorer/' : '/';
+                    window.location.href = getBasePath();
                 }
             };
             
@@ -563,7 +565,7 @@
             
             try {
                 // 获取API基础路径
-                const BASE_PATH = window.location.pathname.startsWith('/anp-explorer/') ? '/anp-explorer' : '';
+                const BASE_PATH = getBasePath();
                 
                 // 调用后端API
                 const response = await fetch(`${BASE_PATH}/api/agent-doc-tree`, {
@@ -596,7 +598,7 @@
                 document.getElementById('loading').innerHTML = `
                     <div class="bg-white dark:bg-gray-800 rounded-lg p-6">
                         <p class="text-red-600 dark:text-red-400 text-lg mb-4">${currentLang === 'zh' ? '错误' : 'Error'}: ${error.message}</p>
-                        <button onclick="window.location.href='https://service.agent-network-protocol.com/anp-explorer/'" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                        <button onclick="window.location.href=getBasePath()" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
                             ${currentLang === 'zh' ? '返回首页' : 'Back to Home'}
                         </button>
                     </div>
