@@ -131,8 +131,8 @@ Your Output should be a single JSON string with the following structure:
         "hotelID": "酒店唯一ID",
         "hotelName": "酒店名称",
         "address": "酒店地址",
-        "rating": 评分,
-        "price": 价格范围
+        "rating": "评分",
+        "price": "价格范围"
       }}
     }},
     {{
@@ -373,8 +373,6 @@ async def hotel_crawler(
 
     # Final result generation
     try:
-        # Add user preference reminder
-        preference_reminder = "请记住使用我存储的用户偏好信息，特别是他们喜欢的酒店品牌和其他偏好。确保推荐的选项优先考虑用户的偏好。"
         
         final_response = await client.chat.completions.create(
             model=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
@@ -384,7 +382,7 @@ async def hotel_crawler(
                 *messages,
                 {
                     "role": "user",
-                    "content": f"{preference_reminder} Based on the information you've gathered, please provide your final response with a detailed text description of the hotel booking options, along with three JSON objects for hotel information, room information, and booking information as specified in the instructions.",
+                    "content": "Based on user preferences and the information you've collected, please provide detailed hotel booking information in a single JSON format.",
                 },
             ],
         )
@@ -414,7 +412,7 @@ async def hotel_crawler(
 async def main():
     """Main function"""
     # Example usage
-    query = "帮我预订北京望京的酒店"
+    query = "帮我预订北京望京的酒店，今天入住，1晚"
     
     # Simply display current user memory (without updating)
     logging.info("\nUser Memory Being Used:")
