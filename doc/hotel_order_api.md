@@ -41,6 +41,12 @@ POST /api/travel/hotel/query
 | 参数名 | 类型 | 描述 |
 | ----- | ---- | --- |
 | summary | string | 查询结果的简要总结 |
+| contactName | string | 订单联系人姓名 |
+| contactMobile | string | 订单联系人手机号 |
+| checkInDate | string | 入住日期（格式：yyyy-MM-dd） |
+| checkOutDate | string | 离店日期（格式：yyyy-MM-dd） |
+| guestNames | array | 房客姓名数组 |
+| roomNum | int | 房间数量 |
 | content | array | 推荐的酒店房型列表，最多返回三个房型 |
 
 ### 成功响应示例
@@ -48,34 +54,44 @@ POST /api/travel/hotel/query
 ```json
 {
   "summary": "这是我们为你推荐的位于北京三里屯附近的经济型酒店房型",
+  "contactName": "常高伟",
+  "contactMobile": "13800138000",
+  "checkInDate": "2025-05-13",
+  "checkOutDate": "2025-05-14",
+  "guestNames": ["常高伟"],
+  "roomNum": 1,
   "content": [
     {
       "roomTypeId": "RT12345",
+      "ratePlanID": "RPL98765",
       "roomType": "标准大床房",
       "bedType": "大床",
       "pricePerNight": 399,
+      "orderAmount": 399.00,
       "images": "https://example.com/images/room1.jpg",
       "available": true,
       "hotel": {
-        "hotelId": "H98765",
+        "hotelID": "H98765",
         "hotelName": "全季酒店(北京三里屯店)",
         "address": "北京市朝阳区三里屯路5号",
-        "rating": 4.5,
+        "rating": "4.5",
         "price": "¥350-¥500"
       }
     },
     {
       "roomTypeId": "RT12346",
+      "ratePlanID": "RPL98766",
       "roomType": "舒适双床房",
       "bedType": "双床",
       "pricePerNight": 429,
+      "orderAmount": 429.00,
       "images": "https://example.com/images/room2.jpg",
       "available": true,
       "hotel": {
-        "hotelId": "H98766",
+        "hotelID": "H98766",
         "hotelName": "如家酒店(北京工体店)",
         "address": "北京市朝阳区工人体育场北路2号",
-        "rating": 4.2,
+        "rating": "4.2",
         "price": "¥300-¥450"
       }
     }

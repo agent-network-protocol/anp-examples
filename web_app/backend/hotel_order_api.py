@@ -273,10 +273,11 @@ async def query_hotel(request: HotelQueryRequest):
         logging.info("Hotel crawler query completed successfully")
             
         # Return the successful result
-        return {
-            "summary": result.get("summary", "这是我们为你推荐的酒店房型"),
-            "content": result.get("content", [])
-        }
+        # return {
+        #     "summary": result.get("summary", "这是我们为你推荐的酒店房型"),
+        #     "content": result.get("content", [])
+        # }
+        return result
         
     except Exception as e:
         logging.error(f"Error in hotel query: {str(e)}")
