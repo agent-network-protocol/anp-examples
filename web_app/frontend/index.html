@@ -1,13 +1,736 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React + TS</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ANP网络探索工具 | ANP Network Explorer</title>
+  <!-- 字体 -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS -->
+  <link href="https://cdn.staticfile.org/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdn.staticfile.org/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <!-- Mermaid -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@latest/dist/mermaid.min.js"></script>
+  <!-- 工具函数 -->
+  <script src="static/utils.js"></script>
+  <style>
+    :root {
+      --primary-color: #4F46E5;
+      --secondary-color: #10B981;
+      --accent-color: #EC4899;
+      --bg-color-light: #F9FAFB;
+      --bg-color-dark: #111827;
+      --text-color-light: #1F2937;
+      --text-color-dark: #F9FAFB;
+    }
+    
+    body {
+      font-family: 'Noto Sans SC', Tahoma, Arial, Roboto, "Droid Sans", "Helvetica Neue", "Droid Sans Fallback", "Heiti SC", "Hiragino Sans GB", Simsun, sans-serif;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    
+    .dark {
+      background-color: var(--bg-color-dark);
+      color: var(--text-color-dark);
+    }
+    
+    .light {
+      background-color: var(--bg-color-light);
+      color: var(--text-color-light);
+    }
+    
+    /* 标题使用衬线字体 */
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Noto Serif SC', serif;
+    }
+    
+    /* 首字下沉效果 */
+    .first-letter-drop:first-letter {
+      font-size: 3.5rem;
+      font-weight: 700;
+      float: left;
+      line-height: 1;
+      margin-right: 0.5rem;
+      margin-top: 0.25rem;
+      color: var(--primary-color);
+    }
+    
+    /* 渐变背景 */
+    .hero-gradient {
+      background: linear-gradient(135deg, #4F46E5 0%, #10B981 100%);
+    }
+    
+    /* 阴影效果 */
+    .hover-shadow {
+      transition: all 0.3s;
+    }
+    
+    .hover-shadow:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    
+    /* 滚动条美化 */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: rgba(79, 70, 229, 0.6);
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(79, 70, 229, 0.8);
+    }
+    
+    /* 打字机效果 */
+    .typewriter {
+      overflow: hidden;
+      border-right: 2px solid var(--primary-color);
+      white-space: nowrap;
+      animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+    }
+    
+    @keyframes typing {
+      from { width: 0 }
+      to { width: 100% }
+    }
+    
+    @keyframes blink-caret {
+      from, to { border-color: transparent }
+      50% { border-color: var(--primary-color) }
+    }
+    
+    /* 加载动画 */
+    .loading {
+      display: inline-block;
+      position: relative;
+      width: 80px;
+      height: 80px;
+    }
+    
+    .loading div {
+      position: absolute;
+      top: 33px;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: var(--primary-color);
+      animation-timing-function: cubic-bezier(0, 1, 1, 0);
+    }
+    
+    .loading div:nth-child(1) {
+      left: 8px;
+      animation: loading1 0.6s infinite;
+    }
+    
+    .loading div:nth-child(2) {
+      left: 8px;
+      animation: loading2 0.6s infinite;
+    }
+    
+    .loading div:nth-child(3) {
+      left: 32px;
+      animation: loading2 0.6s infinite;
+    }
+    
+    .loading div:nth-child(4) {
+      left: 56px;
+      animation: loading3 0.6s infinite;
+    }
+    
+    @keyframes loading1 {
+      0% { transform: scale(0) }
+      100% { transform: scale(1) }
+    }
+    
+    @keyframes loading2 {
+      0% { transform: translate(0, 0) }
+      100% { transform: translate(24px, 0) }
+    }
+    
+    @keyframes loading3 {
+      0% { transform: scale(1) }
+      100% { transform: scale(0) }
+    }
+    
+    /* 美化代码块 */
+    pre {
+      border-radius: 6px;
+      padding: 1rem;
+      overflow-x: auto;
+    }
+    
+    .dark pre {
+      background-color: #1E293B;
+      border: 1px solid #374151;
+    }
+    
+    .light pre {
+      background-color: #F1F5F9;
+      border: 1px solid #E2E8F0;
+    }
+    
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+      .response-container {
+        flex-direction: column;
+      }
+      
+      .sidebar {
+        width: 100% !important;
+      }
+    }
+
+    /* 语言切换 */
+    .lang-zh, .lang-en {
+      display: none;
+    }
+    .lang-zh.active, .lang-en.active {
+      display: block;
+    }
+    span.lang-zh.active, span.lang-en.active {
+      display: inline-block;
+    }
+    
+    /* 进度条样式 */
+    .progress-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background-color: #f0f0f0;
+      border-radius: 0;
+      z-index: 1000;
+    }
+    
+    .progress-bar {
+      width: 0%;
+      height: 6px;
+      background: linear-gradient(to right, #4f46e5, #818cf8, #6366f1);
+      border-radius: 0;
+      transition: width 0.3s ease-in-out;
+      position: relative;
+    }
+    
+    .progress-percentage {
+      position: absolute;
+      top: 8px;
+      right: 0;
+      background-color: #4f46e5;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      transform: translateX(50%);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+
+<body class="min-h-screen">
+  <!-- 顶部导航栏 -->
+  <nav class="py-4 px-6 flex justify-between items-center border-b dark:border-gray-700 border-gray-200">
+    <div class="flex items-center space-x-2">
+      <i class="fas fa-robot text-3xl text-indigo-600"></i>
+      <h1 class="text-2xl font-bold"><span class="lang-zh">ANP网络探索工具</span><span class="lang-en">ANP Network Explorer</span></h1>
+    </div>
+    <div class="flex items-center space-x-4">
+      <button id="lang-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none">
+        <span class="lang-zh">EN</span>
+        <span class="lang-en">中文</span>
+      </button>
+      <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none">
+        <i class="fas fa-moon dark:hidden"></i>
+        <i class="fas fa-sun hidden dark:block"></i>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Hero 区域 -->
+  <div class="hero-gradient text-white py-8 px-6">
+    <div class="container mx-auto text-center">
+      <h1 class="text-3xl md:text-4xl font-bold mb-2"><span class="lang-zh">用自然语言探索智能体网络</span><span class="lang-en">Explore Agent Network with Natural Language</span></h1>
+      <p class="text-lg mx-auto opacity-90">
+        <span class="lang-zh">通过ANP协议连接智能体世界，输入URL与各类智能体交互</span>
+        <span class="lang-en">Connect to the agent world via ANP protocol, input URL to interact with various agents</span>
+      </p>
+    </div>
+  </div>
+
+  <!-- 主要内容区 -->
+  <main class="container mx-auto py-8 px-6">
+    <!-- 输入区域 -->
+    <div class="mb-8 max-w-4xl mx-auto">
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+        <div class="mb-4">
+          <label for="query" class="block text-lg font-medium mb-2">
+            <span class="lang-zh">您的问题</span>
+            <span class="lang-en">Your Question</span>
+          </label>
+          <textarea id="query" rows="3" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" placeholder="例如：帮我查看最近几天杭州的天气 / e.g., Help me check the weather in Hangzhou for the past few days"></textarea>
+        </div>
+        
+        <div class="mb-4">
+          <label for="agent-url" class="block text-lg font-medium mb-2">
+            <span class="lang-zh">智能体 URL（选填）</span>
+            <span class="lang-en">Agent URL (Optional)</span>
+          </label>
+          <input type="text" id="agent-url" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 text-gray-900 dark:text-white" value="">
+        </div>
+        
+        <div class="text-right flex justify-end space-x-3">
+          <button id="analyze-btn" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium flex items-center justify-center">
+            <span class="lang-zh">解析文档结构</span>
+            <span class="lang-en">Analyze Structure</span>
+            <i class="fas fa-project-diagram ml-2"></i>
+          </button>
+          <button id="submit-btn" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md font-medium flex items-center justify-center">
+            <span class="lang-zh">提交问题</span>
+            <span class="lang-en">Submit</span>
+            <i class="fas fa-paper-plane ml-2"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 响应区域 -->
+    <div class="response-container flex space-x-0 md:space-x-6 space-y-6 md:space-y-0">
+      <!-- 响应内容 -->
+      <div class="w-full md:w-3/5 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 min-h-[300px] flex-grow">
+        <div id="response-loader" class="hidden flex justify-center items-center h-full">
+          <div class="loading">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+          <p class="ml-4 text-lg">
+            <span class="lang-zh">正在搜索智能体网络...</span>
+            <span class="lang-en">Searching agent network...</span>
+          </p>
+        </div>
+        
+        <div id="response-content" class="prose dark:prose-invert max-w-none">
+          <h2 class="text-xl font-bold mb-4">
+            <span class="lang-zh">欢迎使用ANP网络探索工具</span>
+            <span class="lang-en">Welcome to ANP Network Explorer</span>
+          </h2>
+          <div class="lang-zh">
+            <p class="first-letter-drop">
+              这是一个基于 Agent Network Protocol (ANP) 的网络探索工具。只需输入您的智能体描述文件URL，即可利用这个工具访问您的智能体并与它进行交互。通过自然语言提问，系统将通过ANP协议为您建立连接。
+            </p>
+            <p>
+              在输入框中输入您的问题，并提供智能体URL，点击"提交问题"按钮即可开始探索。
+            </p>
+            <p>
+              右侧边栏将实时显示系统访问的URL和爬取的数据，让您了解与智能体交互的整个过程。
+            </p>
+          </div>
+          <div class="lang-en">
+            <p class="first-letter-drop">
+              This is a network exploration tool based on Agent Network Protocol (ANP). Simply enter your agent description file URL, and you can use this tool to access your agent and interact with it. By asking questions in natural language, the system will establish a connection for you through the ANP protocol.
+            </p>
+            <p>
+              Enter your question in the input box, provide the agent URL, and click the "Submit" button to start exploring.
+            </p>
+            <p>
+              The sidebar on the right will display in real-time the URLs accessed by the system and the data crawled, allowing you to understand the entire process of interacting with the agent.
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 右侧边栏 -->
+      <div class="sidebar w-full md:w-2/5 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex flex-col h-[calc(100vh-400px)]">
+        <h3 class="text-lg font-bold mb-4 flex items-center">
+          <i class="fas fa-link mr-2 text-indigo-500"></i>
+          <span class="lang-zh">已访问的 URL</span>
+          <span class="lang-en">Visited URLs</span>
+          <span id="url-count" class="ml-2 px-2 py-1 bg-indigo-100 dark:bg-indigo-900 rounded-full text-xs font-medium">0</span>
+        </h3>
+        
+        <div id="urls-container" class="flex-grow overflow-y-auto mb-4">
+          <p class="text-gray-500 dark:text-gray-400 italic">
+            <span class="lang-zh">尚未访问任何 URL</span>
+            <span class="lang-en">No URLs visited yet</span>
+          </p>
+        </div>
+        
+        <div id="document-details" class="hidden mt-4 border-t dark:border-gray-700 pt-4">
+          <h4 class="text-lg font-bold mb-2">
+            <span class="lang-zh">文档详情</span>
+            <span class="lang-en">Document Details</span>
+          </h4>
+          <pre id="document-content" class="text-sm overflow-y-auto max-h-[300px]"></pre>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 进度条容器 -->
+  <div class="progress-container">
+    <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+      <span class="progress-percentage">0%</span>
+    </div>
+  </div>
+
+  <!-- 页脚 -->
+  <footer class="bg-gray-100 dark:bg-gray-900 py-6 px-6 mt-12">
+    <div class="container mx-auto text-center">
+      <p class="text-gray-600 dark:text-gray-400">
+        <span class="lang-zh">&copy; 2024 ANP网络探索工具 | 基于 ANP 协议构建</span>
+        <span class="lang-en">&copy; 2024 ANP Network Explorer | Built on ANP Protocol</span>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // 语言切换
+    function applyLanguage() {
+      const currentLang = localStorage.getItem('language') || 'zh';
+      document.querySelectorAll('.lang-zh, .lang-en').forEach(el => {
+        el.classList.remove('active');
+      });
+      document.querySelectorAll(`.lang-${currentLang}`).forEach(el => {
+        el.classList.add('active');
+      });
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      // 应用语言设置
+      applyLanguage();
+      
+      // 添加语言切换事件
+      document.getElementById('lang-toggle').addEventListener('click', () => {
+        const currentLang = localStorage.getItem('language') || 'zh';
+        const newLang = currentLang === 'zh' ? 'en' : 'zh';
+        localStorage.setItem('language', newLang);
+        applyLanguage();
+      });
+    });
+    
+    // 暗黑模式切换
+    document.addEventListener('DOMContentLoaded', () => {
+      // 检查系统偏好
+      const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const savedTheme = localStorage.getItem('theme');
+      
+      // 根据保存的主题或系统偏好设置主题
+      if (savedTheme === 'light' || (!savedTheme && !prefersDarkMode)) {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+      } else {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+      }
+      
+      // 添加主题切换事件
+      document.getElementById('theme-toggle').addEventListener('click', () => {
+        if (document.documentElement.classList.contains('dark')) {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.classList.add('light');
+          localStorage.setItem('theme', 'light');
+        } else {
+          document.documentElement.classList.remove('light');
+          document.documentElement.classList.add('dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    });
+    
+    // 更新 URL 列表
+    function updateUrlList(urls, documents) {
+      const urlsContainer = document.getElementById('urls-container');
+      const urlCount = document.getElementById('url-count');
+      const currentLang = localStorage.getItem('language') || 'zh';
+      
+      urlCount.textContent = urls.length;
+      
+      if (urls.length === 0) {
+        urlsContainer.innerHTML = `<p class="text-gray-500 dark:text-gray-400 italic">
+          <span class="lang-zh active">${currentLang === 'zh' ? '尚未访问任何 URL' : ''}</span>
+          <span class="lang-en active">${currentLang === 'en' ? 'No URLs visited yet' : ''}</span>
+        </p>`;
+        return;
+      }
+      
+      const docsMap = {};
+      documents.forEach(doc => {
+        docsMap[doc.url] = doc;
+      });
+      
+      urlsContainer.innerHTML = '';
+      
+      urls.forEach((url, index) => {
+        const urlItem = document.createElement('div');
+        urlItem.className = 'mb-2 p-2 border-b dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 rounded cursor-pointer url-item';
+        urlItem.setAttribute('data-url', url);
+        
+        urlItem.innerHTML = `
+          <div class="flex items-start">
+            <span class="font-mono text-xs bg-gray-200 dark:bg-gray-700 rounded-full w-5 h-5 flex items-center justify-center mr-2 flex-shrink-0">${index + 1}</span>
+            <div>
+              <p class="text-sm font-medium break-all">${url}</p>
+              <p class="text-xs text-gray-500">${docsMap[url]?.method || 'GET'}</p>
+            </div>
+          </div>
+        `;
+        
+        urlItem.addEventListener('click', () => {
+          // 移除其他URL项的选中状态
+          document.querySelectorAll('.url-item').forEach(item => {
+            item.classList.remove('bg-indigo-50', 'dark:bg-indigo-900', 'border-indigo-300', 'dark:border-indigo-700');
+          });
+          
+          // 添加当前URL的选中状态
+          urlItem.classList.add('bg-indigo-50', 'dark:bg-indigo-900', 'border-indigo-300', 'dark:border-indigo-700');
+          
+          showDocumentDetails(docsMap[url]);
+        });
+        
+        urlsContainer.appendChild(urlItem);
+      });
+    }
+    
+    // 显示文档详情
+    function showDocumentDetails(doc) {
+      if (!doc) return;
+      
+      const detailsContainer = document.getElementById('document-details');
+      const contentContainer = document.getElementById('document-content');
+      
+      detailsContainer.classList.remove('hidden');
+      
+      // 格式化内容
+      let content = JSON.stringify(doc.content, null, 2);
+      contentContainer.textContent = content;
+      
+      // 滚动到文档详情部分
+      detailsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    
+    // 请求处理函数
+    async function processRequest(isRetry = false) {
+      // 获取进度条元素
+      const progressBar = document.querySelector('.progress-bar');
+      const progressBarContainer = document.querySelector('.progress-container');
+      let progressInterval;
+      
+      try {
+        // 获取输入
+        const query = document.getElementById('query').value.trim();
+        const agentUrl = document.getElementById('agent-url').value.trim();
+        
+        // 验证输入
+        const currentLang = localStorage.getItem('language') || 'zh';
+        if (!query) {
+          alert(currentLang === 'zh' ? '请输入问题' : 'Please enter a question');
+          return;
+        }
+        
+        // 显示加载状态
+        document.getElementById('response-loader').classList.remove('hidden');
+        document.getElementById('response-content').classList.add('hidden');
+        
+        // 重置并显示进度条
+        progressBar.style.width = '0%';
+        progressBarContainer.classList.remove('hidden');
+        
+        // 设置进度条动画 - 更加智能的进度估计
+        let progress = 0;
+        const updateInterval = 2000; // 每秒更新一次
+        
+        progressInterval = setInterval(() => {
+          // 非线性进度增长，开始快，接近结束时变慢
+          if (progress < 30) {
+            progress += 1.5; // 前30%快速增长
+          } else if (progress < 60) {
+            progress += 0.8; // 30-60%中速增长
+          } else if (progress < 90) {
+            progress += 0.3; // 60-90%慢速增长
+          } else if (progress < 95) {
+            progress += 0.1; // 90-95%非常慢
+          }
+          // 限制最大进度为95%，剩余5%在请求完成时填满
+          progress = Math.min(progress, 95);
+          progressBar.style.width = `${progress.toFixed(2)}%`;
+          progressBar.setAttribute('aria-valuenow', progress);
+          progressBar.querySelector('.progress-percentage').textContent = `${progress.toFixed(2)}%`;
+        }, updateInterval);
+        
+        // 获取API基础路径
+        const BASE_PATH = getBasePath();
+        
+        // 发送请求
+        const response = await new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          
+          // 设置超时时间为10分钟
+          xhr.timeout = 300000 * 2; // 5分钟 = 300000毫秒
+          
+          xhr.open('POST', `${BASE_PATH}/api/query`, true);
+          xhr.setRequestHeader('Content-Type', 'application/json');
+          
+          // 超时处理
+          xhr.ontimeout = () => {
+            reject(new Error(currentLang === 'zh' ? '请求超时，服务器处理时间过长' : 'Request timeout, server processing took too long'));
+          };
+          
+          // 错误处理
+          xhr.onerror = () => {
+            reject(new Error(currentLang === 'zh' ? '网络错误，请检查您的连接' : 'Network error, please check your connection'));
+          };
+          
+          // 请求成功处理
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try {
+                const data = JSON.parse(xhr.responseText);
+                console.info('接收到服务器响应:', data);
+                resolve(data);
+              } catch (error) {
+                console.error('解析响应数据错误:', error);
+                reject(new Error(currentLang === 'zh' ? '解析响应数据错误' : 'Error parsing response data'));
+              }
+            } else {
+              reject(new Error(`${currentLang === 'zh' ? 'API请求错误' : 'API request error'}: ${xhr.status}`));
+            }
+          };
+          
+          // 发送请求
+          xhr.send(JSON.stringify({
+            query: query,
+            agent_url: agentUrl
+          }));
+        });
+        
+        // 请求完成，进度条达到100%
+        clearInterval(progressInterval);
+        progressBar.style.width = '100%';
+        progressBar.setAttribute('aria-valuenow', 100);
+        progressBar.querySelector('.progress-percentage').textContent = '100%';
+        
+        // 短暂延迟后隐藏进度条和加载状态
+        setTimeout(() => {
+          progressBarContainer.classList.add('hidden');
+          document.getElementById('response-loader').classList.add('hidden');
+          
+          // 显示响应
+          const responseContent = document.getElementById('response-content');
+          
+          // 检查响应数据是否为空
+          if (!response.content || response.content.trim() === '') {
+            responseContent.innerHTML = `
+              <div class="bg-yellow-100 dark:bg-yellow-900 p-4 rounded-md">
+                <h3 class="text-yellow-700 dark:text-yellow-300 font-bold">${currentLang === 'zh' ? '注意' : 'Note'}</h3>
+                <p>${currentLang === 'zh' ? '服务器返回了空结果。可能是您的查询太复杂或者没有找到相关信息。' : 'The server returned an empty result. The query might be too complex or no relevant information was found.'}</p>
+              </div>
+            `;
+          } else {
+            responseContent.innerHTML = `<div class="markdown-body">${marked.parse(response.content)}</div>`;
+          }
+          
+          responseContent.classList.remove('hidden');
+          
+          // 更新 URL 列表
+          updateUrlList(response.visited_urls, response.crawled_documents);
+        }, 500);
+        
+      } catch (error) {
+        console.error('请求错误:', error);
+        const currentLang = localStorage.getItem('language') || 'zh';
+        
+        // 隐藏加载状态
+        const responseLoader = document.getElementById('response-loader');
+        responseLoader.classList.add('hidden');
+        
+        // 显示错误信息
+        const responseContent = document.getElementById('response-content');
+        responseContent.innerHTML = `
+          <div class="bg-red-100 dark:bg-red-900 p-4 rounded-md">
+            <h3 class="text-red-700 dark:text-red-300 font-bold">${currentLang === 'zh' ? '错误' : 'Error'}</h3>
+            <p>${error.message}</p>
+            <button class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-md font-medium px-4 py-2 mt-4" onclick="processRequest(true)">
+              <span class="lang-zh">重试</span>
+              <span class="lang-en">Retry</span>
+            </button>
+          </div>
+        `;
+        responseContent.classList.remove('hidden');
+      }
+    }
+    
+    // API 请求函数
+    function submitQuery() {
+      processRequest();
+    }
+    
+    // 监听提交按钮点击事件
+    document.getElementById('submit-btn').addEventListener('click', submitQuery);
+    
+    // 监听解析按钮点击事件
+    document.getElementById('analyze-btn').addEventListener('click', analyzeAgentDocStructure);
+    
+    // 监听输入框回车事件
+    document.getElementById('query').addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' && event.ctrlKey) {
+        processRequest();
+      }
+    });
+    
+    // 添加 marked 库支持 Markdown 渲染
+    document.write('<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"><\/script>');
+    
+    // 全局配置对象
+    let appConfig = {
+      agentDocUrl: ""
+    };
+    
+    // 从后端获取配置信息
+    async function fetchConfig() {
+      try {
+        const BASE_PATH = getBasePath();
+        const response = await fetch(`${BASE_PATH}/api/config`);
+        if (response.ok) {
+          const config = await response.json();
+          appConfig = config;
+          // 设置默认的agent-url输入框的值
+          document.getElementById('agent-url').value = config.agentDocUrl;
+        } else {
+          console.error('获取配置失败:', response.status);
+        }
+      } catch (error) {
+        console.error('获取配置出错:', error);
+      }
+    }
+    
+    // 页面加载完成后获取配置
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchConfig();
+    });
+    
+    // 解析智能体文档结构
+    function analyzeAgentDocStructure() {
+      const agentUrl = document.getElementById('agent-url').value.trim() || appConfig.agentDocUrl;
+      
+      // 获取当前语言设置
+      const currentLang = localStorage.getItem('language') || 'zh';
+      
+      // 获取API基础路径
+      const BASE_PATH = getBasePath();
+      
+      // 在新页面打开智能体文档树页面，并传递当前语言
+      window.open(`${BASE_PATH}/agent-doc-tree.html?url=${encodeURIComponent(agentUrl)}&lang=${currentLang}`, '_blank');
+    }
+  </script>
+</body>
 </html>
