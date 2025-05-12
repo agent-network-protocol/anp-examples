@@ -21,7 +21,7 @@ class TestHotelOrderAPI(unittest.TestCase):
         """Test hotel query API - success scenario"""
         # Construct request data
         request_data = {
-            "query": "我想在北京望京附近找一家价格适中的酒店",
+            "query": "我想在北京望京附近找一家价格适中的酒店,今天入住，1晚",
             "agent_url": "https://agent-search.ai/ad.json",
             "max_documents": 20
         }
