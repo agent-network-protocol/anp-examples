@@ -15,7 +15,7 @@ import {
 import { useStyles } from '../styles/useStyles';
 import { DESIGN_GUIDE, HOT_TOPICS } from '../constants/chatData';
 import HotelCard from './HotelCard';
-import { HotelInfo } from '../constants/hotelData';
+import { ChatResponse, RoomInfo } from '../hooks/useChat';
 
 interface ChatListProps {
   messages: any[];
@@ -24,51 +24,53 @@ interface ChatListProps {
 }
 
 // 自定义渲染函数，处理酒店数据
-const RenderCustomContent: BubbleProps['messageRender'] = (content) => {
+const RenderHotelData = (data: ChatResponse) => {
   try {
-    // 查找 Markdown 代码块中的 JSON 数据
-    const jsonRegex = /```json\s*([\s\S]*?)\s*```/;
-    const match = content.match(jsonRegex);
-    
-    if (match && match[1] && match.index !== undefined) {
-      // 尝试解析 JSON 数据
-      const jsonData = JSON.parse(match[1]);
-      
-      // 检查是否是酒店数据
-      if (jsonData.type === 'hotels' && Array.isArray(jsonData.hotels)) {
-        // 提取酒店数据前后的文本
-        const beforeText = content.substring(0, match.index).trim();
-        const afterText = content.substring(match.index + match[0].length).trim();
-        
-        // 渲染酒店卡片列表
-        return (
-          <div>
-            {beforeText && <GPTVis>{beforeText}</GPTVis>}
-            
-            <div style={{ display: 'flex', flexDirection: 'row', gap: '16px', margin: '16px 0', overflowX: 'auto', paddingBottom: '8px' }}>
-              {jsonData.hotels.map((hotel: HotelInfo) => (
-                <HotelCard 
-                  key={hotel.id}
-                  hotel={hotel} 
-                  onPayClick={(id) => {
-                    message.success(`正在处理酒店 ${id} 的支付请求`);
-                  }} 
-                />
-              ))}
-            </div>
-            
-            {afterText && <GPTVis>{afterText}</GPTVis>}
+    // 如果 content 是数组，则渲染酒店卡片列表
+    if (Array.isArray(data.content)) {
+      return (
+        <div>
+          <div style={{ margin: '0 0 16px 0' }}>
+            <GPTVis>{data.summary}</GPTVis>
           </div>
-        );
-      }
+          
+          <div style={{ display: 'flex', flexDirection: 'row', gap: '16px', margin: '16px 0', overflowX: 'auto', paddingBottom: '8px' }}>
+            {data.content.map((room: RoomInfo) => (
+              <HotelCard 
+                key={room.roomTypeId}
+                room={room} 
+                onPayClick={(roomTypeId) => {
+                  message.success(`正在处理房型 ${roomTypeId} 的预订请求`);
+                }} 
+              />
+            ))}
+          </div>
+        </div>
+      );
+    } else {
+      // 如果 content 不是数组，只展示 summary
+      return <GPTVis>{data.summary}</GPTVis>;
     }
-    
-    // 如果不是酒店数据或解析失败，则使用默认的 Markdown 渲染
-    return <GPTVis>{content}</GPTVis>;
   } catch (error) {
-    console.error('Error rendering custom content:', error);
-    return <GPTVis>{content}</GPTVis>;
+    console.error('Error rendering hotel data:', error);
+    return <GPTVis>数据渲染出错</GPTVis>;
   }
+};
+
+// 处理消息内容的渲染
+const processMessageContent = (message: any) => {
+  // 如果是酒店数据
+  if (message.isHotelData && typeof message.content === 'object' && message.content !== null) {
+    return RenderHotelData(message.content);
+  }
+  
+  // 如果是普通文本
+  if (typeof message.content === 'string') {
+    return message.content;
+  }
+  
+  // 其他情况，转为字符串
+  return JSON.stringify(message.content);
 };
 
 const ChatList: React.FC<ChatListProps> = ({ messages, onSubmit, loading }) => {
@@ -81,8 +83,8 @@ const ChatList: React.FC<ChatListProps> = ({ messages, onSubmit, loading }) => {
         <Bubble.List
           items={messages?.map((i) => {
             return {
-              ...i.message,
-              messageRender: RenderCustomContent,
+              role: i.role,
+              content: processMessageContent(i),
               classNames: {
                 content: i.status === 'loading' ? styles.loadingMessage : '',
               },
@@ -114,8 +116,8 @@ const ChatList: React.FC<ChatListProps> = ({ messages, onSubmit, loading }) => {
           <Welcome
             variant="borderless"
             icon="https://avatars.githubusercontent.com/u/199323856?s=48&v=4"
-            title="ANP网络探索工具 | ANP Network Explorer"
-            description="目标是成为智能体互联网时代的HTTP"
+            title="您好，我是您的酒店助手"
+            description="我是一个基于ANP协议的酒店助手，可以为您提供酒店信息、预订、支付等服务。"
           />
           
           {/* 测试按钮 - 用于展示酒店卡片 */}

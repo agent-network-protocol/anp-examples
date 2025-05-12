@@ -20,8 +20,6 @@ interface ChatSiderProps {
   curConversation: string;
   setCurConversation: React.Dispatch<React.SetStateAction<string>>;
   setMessages: React.Dispatch<React.SetStateAction<any[]>>;
-  messageHistory: Record<string, any>;
-  abortController: React.RefObject<AbortController | null>;
   collapsed: boolean;
   toggleCollapsed: () => void;
 }
@@ -32,8 +30,6 @@ const ChatSider: React.FC<ChatSiderProps> = ({
   curConversation,
   setCurConversation,
   setMessages,
-  messageHistory,
-  abortController,
   collapsed,
   toggleCollapsed,
 }) => {
@@ -86,14 +82,9 @@ const ChatSider: React.FC<ChatSiderProps> = ({
           items={conversations}
           className={styles.conversations}
           activeKey={curConversation}
-          onActiveChange={async (val) => {
-            abortController.current?.abort();
-            // The abort execution will trigger an asynchronous requestFallback, which may lead to timing issues.
-            // In future versions, the sessionId capability will be added to resolve this problem.
-            setTimeout(() => {
-              setCurConversation(val);
-              setMessages(messageHistory?.[val] || []);
-            }, 100);
+          onActiveChange={(val) => {
+            setCurConversation(val);
+            setMessages([]);
           }}
           groupable
           styles={{ item: { padding: '0 8px' } }}
@@ -113,14 +104,10 @@ const ChatSider: React.FC<ChatSiderProps> = ({
                   const newList = conversations.filter((item) => item.key !== conversation.key);
                   const newKey = newList?.[0]?.key;
                   setConversations(newList);
-                  // The delete operation modifies curConversation and triggers onActiveChange, so it needs to be executed with a delay to ensure it overrides correctly at the end.
-                  // This feature will be fixed in a future version.
-                  setTimeout(() => {
-                    if (conversation.key === curConversation) {
-                      setCurConversation(newKey);
-                      setMessages(messageHistory?.[newKey] || []);
-                    }
-                  }, 200);
+                  if (conversation.key === curConversation) {
+                    setCurConversation(newKey);
+                    setMessages([]);
+                  }
                 },
               },
             ],

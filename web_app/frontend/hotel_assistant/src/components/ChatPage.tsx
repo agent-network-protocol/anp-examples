@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useStyles } from '../styles/useStyles';
 import { useChat } from '../hooks/useChat';
 import ChatSider from './ChatSider';
@@ -13,14 +13,10 @@ const ChatPage: React.FC = () => {
   
   // 使用自定义 hook 处理聊天逻辑
   const {
-    abortController,
-    messageHistory,
-    setMessageHistory,
     loading,
     messages,
     setMessages,
     onSubmit,
-    updateMessageHistory,
   } = useChat();
 
   // 会话状态
@@ -38,11 +34,6 @@ const ChatPage: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const toggleCollapsed = () => setCollapsed(!collapsed);
 
-  // 更新消息历史
-  useEffect(() => {
-    updateMessageHistory(curConversation);
-  }, [messages, curConversation]);
-
   return (
     <div className={styles.layout}>
       {/* 侧边栏 */}
@@ -52,8 +43,6 @@ const ChatPage: React.FC = () => {
         curConversation={curConversation}
         setCurConversation={setCurConversation}
         setMessages={setMessages}
-        messageHistory={messageHistory}
-        abortController={abortController}
         collapsed={collapsed}
         toggleCollapsed={toggleCollapsed}
       />
