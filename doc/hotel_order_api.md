@@ -4,8 +4,99 @@
 
 ## 目录
 
+- [酒店房型查询](#酒店房型查询)
 - [创建并支付酒店订单](#创建并支付酒店订单)
 - [查询酒店订单详情](#查询酒店订单详情)
+
+## 酒店房型查询
+
+该接口用于查询酒店房型信息，根据用户输入的查询条件返回推荐的酒店房型。
+
+### 接口地址
+
+```
+POST /api/travel/hotel/query
+```
+
+### 请求参数
+
+| 参数名 | 类型 | 是否必须 | 描述 |
+| ----- | ---- | ------- | --- |
+| query | string | 是 | 用户查询的内容，例如："我想在北京找一家三星级以上的酒店" |
+| agent_url | string | 否 | 代理URL，默认为"https://agent-search.ai/ad.json" |
+| max_documents | int | 否 | 最大查询文档数量，默认为20 |
+
+### 请求示例
+
+```json
+{
+  "query": "我想在北京三里屯附近找一家经济型酒店，价格在300-500元之间",
+  "agent_url": "https://agent-search.ai/ad.json",
+  "max_documents": 20
+}
+```
+
+### 响应参数
+
+| 参数名 | 类型 | 描述 |
+| ----- | ---- | --- |
+| summary | string | 查询结果的简要总结 |
+| content | array | 推荐的酒店房型列表，最多返回三个房型 |
+
+### 成功响应示例
+
+```json
+{
+  "summary": "这是我们为你推荐的位于北京三里屯附近的经济型酒店房型",
+  "content": [
+    {
+      "roomTypeId": "RT12345",
+      "roomType": "标准大床房",
+      "bedType": "大床",
+      "pricePerNight": 399,
+      "images": "https://example.com/images/room1.jpg",
+      "available": true,
+      "hotel": {
+        "hotelId": "H98765",
+        "hotelName": "全季酒店(北京三里屯店)",
+        "address": "北京市朝阳区三里屯路5号",
+        "rating": 4.5,
+        "price": "¥350-¥500"
+      }
+    },
+    {
+      "roomTypeId": "RT12346",
+      "roomType": "舒适双床房",
+      "bedType": "双床",
+      "pricePerNight": 429,
+      "images": "https://example.com/images/room2.jpg",
+      "available": true,
+      "hotel": {
+        "hotelId": "H98766",
+        "hotelName": "如家酒店(北京工体店)",
+        "address": "北京市朝阳区工人体育场北路2号",
+        "rating": 4.2,
+        "price": "¥300-¥450"
+      }
+    }
+  ]
+}
+```
+
+### 失败响应示例
+
+```json
+{
+  "summary": "很抱歉，查询过程中出现错误",
+  "content": "无法完成酒店查询：连接超时"
+}
+```
+
+### 处理逻辑
+
+1. 调用酒店查询接口，根据用户输入进行智能搜索
+2. 分析搜索结果，推荐最佳匹配的酒店房型（最多三个）
+3. 返回格式化的酒店房型信息
 
 ## 创建并支付酒店订单
 

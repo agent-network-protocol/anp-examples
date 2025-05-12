@@ -1,11 +1,26 @@
 import logging
 import requests
+import os
+import json
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Union
 
-# 设置日志
-logging.basicConfig(level=logging.INFO)
+# Import hotel_crawler function
+sys_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+if sys_path not in sys.path:
+    import sys
+    sys.path.append(sys_path)
+from anp_examples.hotel_crawler import hotel_crawler
+
+# Get project root directory
+BASE_DIR = Path(__file__).resolve().parent.parent
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+
+# Get DID paths
+did_document_path = str(ROOT_DIR / "use_did_test_public/did.json")
+private_key_path = str(ROOT_DIR / "use_did_test_public/key-1_private.pem")
+
 
 # 创建路由器
 router = APIRouter()
@@ -69,6 +84,17 @@ class HotelOrderDetailResponse(BaseModel):
     success: bool = Field(..., description="请求是否成功")
     msg: str = Field(..., description="请求结果消息")
     data: Optional[Dict[str, Any]] = Field(None, description="订单详情数据")
+    
+# 定义酒店查询请求模型
+class HotelQueryRequest(BaseModel):
+    query: str = Field(..., description="用户查询的内容，例如：'我想在北京找一家三星级以上的酒店'")
+    agent_url: Optional[str] = Field("https://agent-search.ai/ad.json", description="代理URL")
+    max_documents: Optional[int] = Field(20, description="最大查询文档数量")
+
+# 定义酒店查询响应模型
+class HotelQueryResponse(BaseModel):
+    summary: str = Field(..., description="查询结果的简要总结")
+    content: Union[List[Dict[str, Any]], str] = Field(..., description="推荐的酒店房型列表或错误信息")
 
 @router.post("/api/travel/hotel/order/create_and_pay", response_model=CreateAndPayHotelOrderResponse)
 async def create_and_pay_hotel_order(request: CreateAndPayHotelOrderRequest):
@@ -226,4 +252,50 @@ async def get_hotel_order_detail(request: HotelOrderDetailRequest):
     except Exception as e:
         logging.error(f"Error in get hotel order detail: {str(e)}")
         raise HTTPException(status_code=500, detail=f"处理酒店订单详情查询请求时发生错误: {str(e)}")
+
+
+@router.post("/api/travel/hotel/query", response_model=HotelQueryResponse)
+async def query_hotel(request: HotelQueryRequest):
+    """
+    酒店房型查询接口
+    
+    1. 调用酒店查询接口，根据用户输入进行智能搜索
+    2. 分析搜索结果，推荐最佳匹配的酒店房型（最多三个）
+    3. 返回格式化的酒店房型信息
+    """
+    logging.info("Received hotel query request: %s", request.query)
+    
+    try:
+
+        # Use agent URL provided by user or default URL
+        initial_url = (
+            request.agent_url
+            if request.agent_url
+            else "https://agent-search.ai/ad.json"
+        )
+        
+        # Call hotel_crawler function
+        result = await hotel_crawler(
+            user_input=request.query,
+            task_type="hotel_booking",
+            did_document_path=did_document_path,
+            private_key_path=private_key_path,
+            max_documents=20,
+            initial_url=initial_url
+        )
+        
+        logging.info("Hotel crawler query completed successfully")
+            
+        # Return the successful result
+        return {
+            "summary": result.get("summary", "这是我们为你推荐的酒店房型"),
+            "content": result.get("content", [])
+        }
+        
+    except Exception as e:
+        logging.error(f"Error in hotel query: {str(e)}")
+        return {
+            "summary": "很抱歉，处理查询请求时出现系统错误",
+            "content": f"处理酒店查询请求时发生错误: {str(e)}"
+        }
 
