@@ -30,10 +30,10 @@ class UserMemory:
         self.default_room_preference = "大床房"
         
         # User preferences (can be updated based on interactions)
-        self.preferred_hotel_chains = ["全季酒店", "如家酒店", "汉庭酒店"]
+        self.preferred_hotel_chains = ["全季酒店"]
         self.preferred_locations = []
         self.price_range = {"min": 0, "max": 1000}
-        self.preferred_amenities = ["免费Wi-Fi", "免费停车", "健身中心"]
+        self.preferred_amenities = ["免费Wi-Fi"]
         self.previous_bookings = []
         
     def to_dict(self) -> Dict[str, Any]:
@@ -95,37 +95,6 @@ You are an intelligent hotel booking assistant. Your goal is to help users book 
 5. Continue exploring relevant links until sufficient information is found.
 6. Summarize the information and provide the most appropriate recommendations to the user.
 
-## Response Format
-Your response should be a single JSON string with the following structure:
-```
-{{
-  "summary": "简要总结查询结果和推荐",
-  "content": [
-    {{
-      "hotelId": "酒店唯一ID",
-      "hotelName": "酒店名称",
-      "address": "酒店地址",
-      "rating": 评分,
-      "price": 价格范围,
-      "rooms": [
-        {{
-          "roomTypeId": "房型ID",
-          "roomType": "房型名称",
-          "bedType": "床型",
-          "pricePerNight": 每晚价格,
-          "images": ["图片URL1", "图片URL2"],
-          "available": true/false
-        }},
-        // 更多房型...
-      ]
-    }},
-    // 更多酒店...
-  ]
-}}
-```
-
-Ensure the generated JSON is valid, formatted correctly, and can be directly parsed by a JSON parser.
-
 ## JSON-LD Data Parsing Tips
 1. Pay attention to the @context field, which defines the semantic context of the data.
 2. The @type field indicates the type of entity, helping you understand the meaning of the data.
@@ -136,6 +105,42 @@ Provide detailed information and clear explanations to help users understand the
 
 ## Date
 Current date: {current_date}
+
+
+## Output Format
+Your Output should be a single JSON string with the following structure:
+{{
+  "summary": "这是我们为你推荐的酒店(类似这样的描述，使用中文)",
+  "content": [
+    {{
+      "roomTypeId": "房型ID",
+      "roomType": "房型名称",
+      "bedType": "床型",
+      "pricePerNight": 每晚价格,
+      "images": "图片URL，每个房间给图片",
+      "available": true/false,
+      "hotel": {{
+        "hotelId": "酒店唯一ID",
+        "hotelName": "酒店名称",
+        "address": "酒店地址",
+        "rating": 评分,
+        "price": 价格范围
+      }}
+    }},
+    {{
+      // 第二个房型，最多只返回三个房型
+    }},
+    {{
+      // 第三个房型，最多只返回三个房型
+    }}
+  ]
+}}
+
+Note: 
+- The summary content must be in Chinese.
+- nsure the generated JSON is valid, formatted correctly, and can be directly parsed by a JSON parser.
+- Return content contains only complete JSON, without any other characters, including backticks
+
 """
 
 # Global variable
@@ -215,7 +220,7 @@ async def hotel_crawler(
     task_type: str = "hotel_booking",
     did_document_path: Optional[str] = None,
     private_key_path: Optional[str] = None,
-    max_documents: int = 10,
+    max_documents: int = 20,
     initial_url: str = "https://agent-search.ai/ad.json",
 ) -> Dict[str, Any]:
     """
@@ -397,18 +402,25 @@ async def hotel_crawler(
 async def main():
     """Main function"""
     # Example usage
-    query = "我想查询北京新国贸附近的酒店，两天后入住，住三晚"
+    query = "帮我预订北京新国贸附近的酒店"
     
     # Simply display current user memory (without updating)
-    print("\nUser Memory Being Used:")
-    print(json.dumps(user_memory.to_dict(), ensure_ascii=False, indent=2))
+    logging.info("\nUser Memory Being Used:")
+    logging.info(json.dumps(user_memory.to_dict(), ensure_ascii=False, indent=2))
     
     # Process hotel booking using pre-defined memory
     result = await hotel_crawler(user_input=query)
     
     # Display results
-    print("\nSearch Result:")
-    print(json.dumps(result["content"], ensure_ascii=False, indent=2))
+    logging.info("\nSearch Result:")
+    logging.info("\nSearch Result:")
+    try:
+        # 尝试解析JSON并格式化输出，提高可读性
+        content_dict = json.loads(result["content"]) if isinstance(result["content"], str) else result["content"]
+        logging.info(json.dumps(content_dict, ensure_ascii=False, indent=4, sort_keys=True))
+    except json.JSONDecodeError:
+        # 如果不是有效的JSON，直接输出原内容
+        logging.info(result["content"])
 
 
 if __name__ == "__main__":
