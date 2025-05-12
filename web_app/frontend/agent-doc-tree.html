@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能体文档树结构 | Agent Document Structure</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <!-- 工具函数 -->
+    <script src="static/utils.js"></script>
+    <style>
+        #network-container {
+            height: 80vh;
+            border: 1px solid #ddd;
+            background-color: #fafafa;
+            border-radius: 8px;
+        }
+
+        .node-tooltip {
+            position: absolute;
+            padding: 8px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        .dark {
+            background-color: #111827;
+            color: #F9FAFB;
+        }
+        
+        .light {
+            background-color: #F9FAFB;
+            color: #1F2937;
+        }
+        
+        .dark #network-container {
+            background-color: #1E293B;
+            border-color: #374151;
+        }
+        
+        .dark .node-tooltip {
+            background-color: #1E293B;
+            color: #F9FAFB;
+            border-color: #374151;
+        }
+        
+        /* 语言切换样式 */
+        .lang-zh, .lang-en {
+          display: none;
+        }
+        .lang-zh.active, .lang-en.active {
+          display: inline;
+        }
+        span.lang-zh.active, span.lang-en.active {
+          display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto px-4 py-8">
+        <nav class="flex justify-between items-center mb-8">
+            <button onclick="window.location.href=getBasePath()" 
+                    class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                <span class="lang-zh">返回</span>
+                <span class="lang-en">Back</span>
+            </button>
+            <div class="flex items-center space-x-4">
+                <button id="lang-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none">
+                    <span class="lang-zh">EN</span>
+                    <span class="lang-en">中文</span>
+                </button>
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none">
+                    <svg id="moon-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                    </svg>
+                    <svg id="sun-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
+        </nav>
+
+        <h1 class="text-3xl font-bold mb-6 text-center">
+            <span class="lang-zh">智能体文档树结构</span>
+            <span class="lang-en">Agent Document Structure</span>
+        </h1>
+        <p class="text-gray-600 dark:text-gray-400 mb-8 text-center">
+            <span class="lang-zh">可视化智能体描述文件及其关联文档的链接关系</span>
+            <span class="lang-en">Visualize the connections between agent description files and their linked documents</span>
+        </p>
+
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
+            <div id="network-container"></div>
+        </div>
+        
+        <div id="loading" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+            <div class="bg-white dark:bg-gray-800 rounded-lg p-6 flex flex-col items-center">
+                <div class="loading-spinner mb-4">
+                    <svg class="animate-spin h-10 w-10 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+                <p class="text-gray-700 dark:text-gray-300 text-lg">
+                    <span class="lang-zh">正在获取文档结构...</span>
+                    <span class="lang-en">Loading document structure...</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let network = null;
+        let nodes = new vis.DataSet();
+        let edges = new vis.DataSet();
+        
+        // 应用语言
+        function applyLanguage() {
+            const currentLang = localStorage.getItem('language') || 'zh';
+            document.querySelectorAll('.lang-zh, .lang-en').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.querySelectorAll(`.lang-${currentLang}`).forEach(el => {
+                el.classList.add('active');
+            });
+        }
+        
+        // 应用深色或浅色模式
+        function applyTheme() {
+            const isDarkMode = localStorage.getItem('theme') === 'dark' || 
+                               (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            
+            if (isDarkMode) {
+                document.body.classList.add('dark');
+                document.body.classList.remove('light');
+                document.getElementById('moon-icon').classList.add('hidden');
+                document.getElementById('sun-icon').classList.remove('hidden');
+            } else {
+                document.body.classList.remove('dark');
+                document.body.classList.add('light');
+                document.getElementById('moon-icon').classList.remove('hidden');
+                document.getElementById('sun-icon').classList.add('hidden');
+            }
+        }
+        
+        // 切换语言
+        document.getElementById('lang-toggle').addEventListener('click', () => {
+            const currentLang = localStorage.getItem('language') || 'zh';
+            const newLang = currentLang === 'zh' ? 'en' : 'zh';
+            localStorage.setItem('language', newLang);
+            applyLanguage();
+        });
+        
+        // 切换主题
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            const isDarkMode = document.body.classList.contains('dark');
+            localStorage.setItem('theme', isDarkMode ? 'light' : 'dark');
+            applyTheme();
+        });
+
+        // 网络图配置
+        const networkOptions = {
+            nodes: {
+                shape: 'box',
+                margin: 10,
+                font: {
+                    size: 14
+                },
+                shadow: true
+            },
+            edges: {
+                arrows: 'to',
+                smooth: {
+                    type: 'cubicBezier',
+                    forceDirection: 'horizontal'
+                }
+            },
+            layout: {
+                hierarchical: {
+                    direction: 'LR',
+                    sortMethod: 'directed',
+                    levelSeparation: 200,
+                    nodeSpacing: 150
+                }
+            },
+            physics: false,
+            interaction: {
+                hover: true,
+                tooltipDelay: 200
+            }
+        };
+
+        // 显示提示
+        function showTooltip(text, x, y) {
+            let tooltip = document.querySelector('.node-tooltip');
+            if (!tooltip) {
+                tooltip = document.createElement('div');
+                tooltip.className = 'node-tooltip';
+                document.body.appendChild(tooltip);
+            }
+            tooltip.textContent = text;
+            tooltip.style.left = (x + 10) + 'px';
+            tooltip.style.top = (y + 10) + 'px';
+            tooltip.style.display = 'block';
+        }
+
+        // 隐藏提示
+        function hideTooltip() {
+            const tooltip = document.querySelector('.node-tooltip');
+            if (tooltip) {
+                tooltip.style.display = 'none';
+            }
+        }
+
+        // 显示文档内容
+        async function showDocumentContent(url, documents = null) {
+            try {
+                let docContent;
+                
+                // 如果提供了文档列表，从中查找
+                if (documents && Array.isArray(documents)) {
+                    const doc = documents.find(d => d.url === url);
+                    if (doc && doc.content) {
+                        docContent = doc.content;
+                    }
+                }
+                
+                // 如果没有从文档列表中找到，再从API获取
+                if (!docContent) {
+                    // 获取API基础路径
+                    const BASE_PATH = getBasePath();
+                    
+                    // 从API获取文档内容
+                    const response = await fetch(`${BASE_PATH}/api/get-document`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ url: url }),
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`API request failed with status ${response.status}`);
+                    }
+                    
+                    const result = await response.json();
+                    if (!result.success || !result.content) {
+                        throw new Error(result.message || 'Failed to get document content');
+                    }
+                    
+                    docContent = result.content;
+                }
+                
+                // 获取当前语言
+                const currentLang = localStorage.getItem('language') || 'zh';
+                
+                // 创建加载中弹窗
+                const loadingDialog = document.createElement('div');
+                loadingDialog.className = 'fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50';
+                loadingDialog.id = 'doc-loading-dialog';
+                
+                loadingDialog.innerHTML = `
+                    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 flex flex-col items-center">
+                        <div class="loading-spinner mb-4">
+                            <svg class="animate-spin h-10 w-10 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
+                        <p class="text-gray-700 dark:text-gray-300 text-lg">${currentLang === 'zh' ? '正在获取文档内容...' : 'Loading document content...'}</p>
+                    </div>
+                `;
+                
+                document.body.appendChild(loadingDialog);
+                
+                // 添加ESC键关闭功能
+                const closeLoadingDialog = () => {
+                    document.removeEventListener('keydown', escKeyLoadingHandler);
+                    if (document.body.contains(loadingDialog)) {
+                        document.body.removeChild(loadingDialog);
+                    }
+                };
+                
+                const escKeyLoadingHandler = (e) => {
+                    if (e.key === 'Escape') {
+                        closeLoadingDialog();
+                    }
+                };
+                
+                document.addEventListener('keydown', escKeyLoadingHandler);
+                
+                try {
+                    // 创建文档内容弹窗
+                    showDocumentDialog(url, docContent);
+                    
+                } catch (error) {
+                    console.error('获取文档内容失败:', error);
+                    
+                    // 移除加载中弹窗
+                    closeLoadingDialog();
+                    
+                    // 显示错误弹窗
+                    showErrorDialog(`${currentLang === 'zh' ? '无法获取文档内容' : 'Failed to get document content'}: ${error.message}`);
+                }
+            } catch (error) {
+                console.error('获取文档内容失败:', error);
+                
+                // 移除加载中弹窗
+                closeLoadingDialog();
+                
+                // 显示错误弹窗
+                showErrorDialog(`${currentLang === 'zh' ? '无法获取文档内容' : 'Failed to get document content'}: ${error.message}`);
+            }
+        }
+        
+        // 显示文档内容弹窗
+        function showDocumentDialog(url, content) {
+            // 获取当前语言
+            const currentLang = localStorage.getItem('language') || 'zh';
+            
+            const dialog = document.createElement('div');
+            dialog.className = 'fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50';
+            dialog.id = 'doc-content-dialog';
+            
+            const filename = url.split('/').pop();
+            
+            dialog.innerHTML = `
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden w-4/5 h-4/5 max-w-5xl flex flex-col">
+                    <div class="flex justify-between items-center p-4 border-b dark:border-gray-700">
+                        <h2 class="text-xl font-bold truncate max-w-md">
+                            ${filename}
+                        </h2>
+                        <button id="close-content-dialog" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="flex-grow overflow-auto p-4">
+                        <pre class="text-xs overflow-auto p-4 bg-gray-100 dark:bg-gray-900 rounded">${JSON.stringify(content, null, 2)}</pre>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(dialog);
+            
+            // 绑定关闭事件
+            document.getElementById('close-content-dialog').addEventListener('click', () => {
+                closeDocumentDialog();
+            });
+            
+            // 添加ESC键关闭功能
+            const escKeyHandler = (e) => {
+                if (e.key === 'Escape') {
+                    closeDocumentDialog();
+                }
+            };
+            
+            document.addEventListener('keydown', escKeyHandler);
+            
+            // 关闭弹窗函数
+            function closeDocumentDialog() {
+                document.removeEventListener('keydown', escKeyHandler);
+                document.body.removeChild(dialog);
+            }
+            
+            // 点击背景关闭弹窗
+            dialog.addEventListener('click', (e) => {
+                if (e.target === dialog) {
+                    closeDocumentDialog();
+                }
+            });
+        }
+        
+        // 显示错误弹窗
+        function showErrorDialog(message) {
+            // 获取当前语言
+            const currentLang = localStorage.getItem('language') || 'zh';
+            
+            const dialog = document.createElement('div');
+            dialog.className = 'fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50';
+            dialog.id = 'error-dialog';
+            
+            dialog.innerHTML = `
+                <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md">
+                    <div class="flex items-center mb-4">
+                        <svg class="w-6 h-6 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <h3 class="text-lg font-bold text-red-600 dark:text-red-400">${currentLang === 'zh' ? '错误' : 'Error'}</h3>
+                    </div>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">${message}</p>
+                    <div class="text-right">
+                        <button id="close-error-dialog" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                            ${currentLang === 'zh' ? '关闭' : 'Close'}
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(dialog);
+            
+            // 绑定关闭事件
+            const closeErrorDialog = () => {
+                document.removeEventListener('keydown', escKeyHandler);
+                document.body.removeChild(dialog);
+            };
+            
+            document.getElementById('close-error-dialog').addEventListener('click', closeErrorDialog);
+            
+            // 添加ESC键关闭功能
+            const escKeyHandler = (e) => {
+                if (e.key === 'Escape') {
+                    closeErrorDialog();
+                }
+            };
+            
+            document.addEventListener('keydown', escKeyHandler);
+            
+            // 点击背景关闭弹窗
+            dialog.addEventListener('click', (e) => {
+                if (e.target === dialog) {
+                    closeErrorDialog();
+                }
+            });
+        }
+
+        // 构建树状网络图
+        function buildNetworkFromTree(treeData, documents) {
+            // 递归处理树节点
+            function processNode(node, parentId = null) {
+                const nodeId = node.url || `node_${Date.now()}_${Math.random().toString().slice(2)}`;
+                
+                // 添加节点
+                if (node.url) {
+                    const filename = node.url.split('/').pop();
+                    nodes.add({
+                        id: nodeId,
+                        label: node.name || filename,
+                        url: node.url,
+                        shape: 'box',
+                        color: {
+                            background: '#E0E7FF',  // 浅蓝色背景
+                            border: '#4F46E5'
+                        },
+                        font: {
+                            color: '#1F2937'  // 深色文字，确保可读性
+                        }
+                    });
+                    
+                    // 添加与父节点的连接
+                    if (parentId) {
+                        edges.add({
+                            from: parentId,
+                            to: nodeId
+                        });
+                    }
+                }
+                
+                // 处理子节点
+                if (node.children && node.children.length > 0) {
+                    node.children.forEach(child => {
+                        processNode(child, nodeId);
+                    });
+                }
+            }
+            
+            // 处理根节点
+            if (treeData.children && treeData.children.length > 0) {
+                treeData.children.forEach(child => {
+                    processNode(child);
+                });
+            }
+        }
+
+        // 初始化网络图
+        function initNetwork(treeData, documents) {
+            // 构建网络数据
+            buildNetworkFromTree(treeData, documents);
+            
+            // 创建网络图
+            const container = document.getElementById('network-container');
+            const data = {
+                nodes: nodes,
+                edges: edges
+            };
+            
+            network = new vis.Network(container, data, networkOptions);
+            
+            // 添加点击事件
+            network.on('click', async function(params) {
+                if (params.nodes.length > 0) {
+                    const nodeId = params.nodes[0];
+                    const node = nodes.get(nodeId);
+                    if (node.url) {
+                        await showDocumentContent(node.url, documents);
+                    }
+                }
+            });
+            
+            // 添加悬停提示
+            network.on('hoverNode', function(params) {
+                const node = nodes.get(params.node);
+                showTooltip(node.url || node.label, params.event.pageX, params.event.pageY);
+            });
+            
+            network.on('blurNode', function() {
+                hideTooltip();
+            });
+            
+            // 调整视图
+            setTimeout(() => {
+                network.fit({
+                    animation: {
+                        duration: 1000,
+                        easingFunction: 'easeInOutQuad'
+                    }
+                });
+            }, 500);
+        }
+
+        // 获取URL参数
+        function getParameterByName(name, url = window.location.href) {
+            name = name.replace(/[\[\]]/g, '\\$&');
+            const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+                  results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, ' '));
+        }
+
+        // 加载文档树数据
+        async function loadDocTree() {
+            // 获取当前语言
+            const currentLang = localStorage.getItem('language') || 'zh';
+            
+            const agentUrl = getParameterByName('url');
+            if (!agentUrl) {
+                document.getElementById('loading').innerHTML = `
+                    <div class="bg-white dark:bg-gray-800 rounded-lg p-6">
+                        <p class="text-red-600 dark:text-red-400 text-lg mb-4">${currentLang === 'zh' ? '错误：缺少URL参数' : 'Error: Missing URL parameter'}</p>
+                        <button onclick="window.location.href=getBasePath()" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                            ${currentLang === 'zh' ? '返回首页' : 'Back to Home'}
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            // 添加ESC键关闭功能
+            const escKeyInitHandler = (e) => {
+                if (e.key === 'Escape') {
+                    window.location.href = getBasePath();
+                }
+            };
+            
+            document.addEventListener('keydown', escKeyInitHandler);
+            
+            try {
+                // 获取API基础路径
+                const BASE_PATH = getBasePath();
+                
+                // 调用后端API
+                const response = await fetch(`${BASE_PATH}/api/agent-doc-tree`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        agent_url: agentUrl
+                    }),
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`${currentLang === 'zh' ? 'API请求错误' : 'API request error'}: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // 初始化网络图
+                initNetwork(data.doc_tree, data.crawled_documents);
+                
+                // 隐藏加载中
+                document.getElementById('loading').style.display = 'none';
+                
+                // 移除ESC事件监听
+                document.removeEventListener('keydown', escKeyInitHandler);
+                
+            } catch (error) {
+                console.error('请求错误:', error);
+                document.getElementById('loading').innerHTML = `
+                    <div class="bg-white dark:bg-gray-800 rounded-lg p-6">
+                        <p class="text-red-600 dark:text-red-400 text-lg mb-4">${currentLang === 'zh' ? '错误' : 'Error'}: ${error.message}</p>
+                        <button onclick="window.location.href=getBasePath()" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                            ${currentLang === 'zh' ? '返回首页' : 'Back to Home'}
+                        </button>
+                    </div>
+                `;
+                
+                // 保留ESC事件监听器，用户可以按ESC返回首页
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 先应用上一页面的语言设置
+            const urlLang = getParameterByName('lang');
+            if (urlLang && (urlLang === 'zh' || urlLang === 'en')) {
+                localStorage.setItem('language', urlLang);
+            }
+            
+            applyTheme();
+            applyLanguage();
+            loadDocTree();
+        });
+    </script>
+</body>
+</html> 
