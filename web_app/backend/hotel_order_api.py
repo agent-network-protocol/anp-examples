@@ -1,15 +1,16 @@
 import logging
 import requests
+from pathlib import Path
 import os
 import json
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any, Union
+import sys
 
 # Import hotel_crawler function
 sys_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 if sys_path not in sys.path:
-    import sys
     sys.path.append(sys_path)
 from anp_examples.hotel_crawler import hotel_crawler
 
