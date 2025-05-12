@@ -30,21 +30,6 @@ router = APIRouter()
 class GuestName(BaseModel):
     name: str
 
-class CreateHotelOrderRequest(BaseModel):
-    hotelID: int = Field(..., description="酒店ID")
-    ratePlanID: str = Field(..., description="产品（价格计划）ID")
-    roomNum: int = Field(..., description="房间数量")
-    checkInDate: str = Field(..., description="入住日期（格式：yyyy-MM-dd）")
-    checkOutDate: str = Field(..., description="离店日期（格式：yyyy-MM-dd）")
-    guestNames: List[str] = Field(..., description="房客姓名，每个房间预留一个房客姓名")
-    orderAmount: float = Field(..., description="订单总金额")
-    contactName: str = Field(..., description="订单联系人姓名")
-    contactMobile: str = Field(..., description="订单联系人手机号")
-    arriveTime: Optional[str] = Field(None, description="最晚到店时间，如：2020-07-27 16:00")
-    contactEmail: Optional[str] = Field(None, description="订单联系人邮箱")
-    orderRemark: Optional[str] = Field(None, description="用户备注信息")
-    callBackUrl: Optional[str] = Field(None, description="订单状态变更异步回调地址")
-
 # 定义酒店订单支付请求模型
 class PayHotelOrderRequest(BaseModel):
     customerOrderNo: str = Field(..., description="商户订单号，用于标识要支付的订单")

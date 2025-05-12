@@ -24,7 +24,7 @@ class UserMemory:
     """Class to store user memory and preferences"""
     def __init__(self):
         # Default user information
-        self.default_name = "李四"
+        self.default_name = "常高伟"
         self.default_phone = "13800000000"
         self.default_payment_method = "支付宝"
         self.default_room_preference = "大床房"
@@ -111,16 +111,24 @@ Current date: {current_date}
 Your Output should be a single JSON string with the following structure:
 {{
   "summary": "这是我们为你推荐的酒店(类似这样的描述，使用中文)",
+  "contactName": "联系人姓名", 
+  "contactMobile": "联系人电话",
+  "checkInDate": "入住日期",
+  "checkOutDate": "离开日期",
+  "guestNames": ["入住人姓名"],
+  "roomNum": 1,
   "content": [
     {{
       "roomTypeId": "房型ID",
+      "ratePlanID": "RPL98765",
       "roomType": "房型名称",
       "bedType": "床型",
       "pricePerNight": 每晚价格,
+      "orderAmount": 698.00,
       "images": "图片URL，每个房间给图片",
       "available": true/false,
       "hotel": {{
-        "hotelId": "酒店唯一ID",
+        "hotelID": "酒店唯一ID",
         "hotelName": "酒店名称",
         "address": "酒店地址",
         "rating": 评分,
@@ -138,7 +146,7 @@ Your Output should be a single JSON string with the following structure:
 
 Note: 
 - The summary content must be in Chinese.
-- nsure the generated JSON is valid, formatted correctly, and can be directly parsed by a JSON parser.
+- ensure the generated JSON is valid, formatted correctly, and can be directly parsed by a JSON parser.
 - Return content contains only complete JSON, without any other characters, including backticks
 
 """
@@ -185,7 +193,7 @@ async def handle_tool_call(
             result = await anp_tool.execute(
                 url=url, method=method, headers=headers, params=params, body=body
             )
-            logging.info(f"ANPTool response [url: {url}]")
+            logging.info(f"ANPTool response ********  [url: {url}]")
 
             # Record visited URLs and obtained content
             visited_urls.add(url)
@@ -382,27 +390,31 @@ async def hotel_crawler(
         )
 
         final_content = final_response.choices[0].message.content
-        logging.info("Final response generated")
-        
-        # Memory is used but not updated automatically
-        # The system will use the pre-defined memory without automatic updates
+        logging.info("Final response generated:")
+        logging.info(final_content)
+
+        content_dict = {}
+
+        try:
+            # 尝试解析JSON并格式化输出，提高可读性
+            content_dict = json.loads(final_content) if isinstance(final_content, str) else result["content"]
+            logging.info(json.dumps(content_dict, ensure_ascii=False, indent=4, sort_keys=True))
+        except json.JSONDecodeError:
+            # 如果不是有效的JSON，直接输出原内容
+            logging.error("Final response  Is not json: ")
+            logging.info(final_content)
+
+        return content_dict
         
     except Exception as e:
         logging.error(f"Error generating final response: {str(e)}")
-        final_content = f"Error generating final response: {str(e)}"
-
-    return {
-        "content": final_content,
-        "type": "success",
-        "visited_urls": list(visited_urls),
-        "crawled_documents": crawled_documents,
-    }
+        return {} 
 
 
 async def main():
     """Main function"""
     # Example usage
-    query = "帮我预订北京新国贸附近的酒店"
+    query = "帮我预订北京望京的酒店"
     
     # Simply display current user memory (without updating)
     logging.info("\nUser Memory Being Used:")
@@ -412,16 +424,8 @@ async def main():
     result = await hotel_crawler(user_input=query)
     
     # Display results
-    logging.info("\nSearch Result:")
-    logging.info("\nSearch Result:")
-    try:
-        # 尝试解析JSON并格式化输出，提高可读性
-        content_dict = json.loads(result["content"]) if isinstance(result["content"], str) else result["content"]
-        logging.info(json.dumps(content_dict, ensure_ascii=False, indent=4, sort_keys=True))
-    except json.JSONDecodeError:
-        # 如果不是有效的JSON，直接输出原内容
-        logging.info(result["content"])
-
+    logging.info("Search Result:")
+    logging.info(result)
 
 if __name__ == "__main__":
     set_log_color_level(logging.DEBUG)
