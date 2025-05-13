@@ -231,7 +231,7 @@ async def simple_crawl(
 
         # Get model response
         completion = await client.chat.completions.create(
-            model=os.getenv("AZURE_OPENAI_MODEL"),
+            model=os.getenv("AZURE_OPENAI_MODEL_NAME"),
             messages=messages,
             tools=get_available_tools(anp_tool),
             tool_choice="auto",

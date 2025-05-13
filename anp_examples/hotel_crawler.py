@@ -97,6 +97,7 @@ You are an intelligent hotel booking assistant. Your goal is to help users book 
 4. Build requests according to task requirements to get the needed hotel and room information.
 5. Continue exploring relevant links until sufficient information is found.
 6. Summarize the information and provide the most appropriate recommendations to the user.
+7. 对于酒店，要查询房间剩余的情况，只输出还有空余房间的酒店和房型，并且返回ratePlanID
 
 ## JSON-LD Data Parsing Tips
 1. Pay attention to the @context field, which defines the semantic context of the data.
@@ -123,7 +124,7 @@ Your Output should be a single JSON string with the following structure:
   "content": [
     {{
       "roomTypeId": "房型ID",
-      "ratePlanID": "RPL98765",
+      "ratePlanID": "产品(价格计划)ID",
       "roomType": "房型名称",
       "bedType": "床型",
       "pricePerNight": 每晚价格,
@@ -260,10 +261,10 @@ async def hotel_crawler(
 
     # Initialize Azure OpenAI client
     client = AsyncAzureOpenAI(
-        api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-        api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
-        azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-        azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
+        api_key=os.getenv("AZURE_OPENAI_API_KEY_2"),
+        api_version=os.getenv("AZURE_OPENAI_API_VERSION_2"),
+        azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT_2"),
+        azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT_2")
     )
 
     # Get initial URL content
@@ -327,9 +328,9 @@ async def hotel_crawler(
         try:
             # Call LLM API
             response = await client.chat.completions.create(
-                model=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
+                model=os.getenv("AZURE_OPENAI_DEPLOYMENT_2"),
                 # 移除temperature和top_p参数，使用默认值
-                max_completion_tokens=4096,
+                max_completion_tokens=100000,
                 messages=messages,
                 tools=get_available_tools(anp_tool),
                 tool_choice="auto",
@@ -378,7 +379,7 @@ async def hotel_crawler(
     # Final result generation
     try:
         final_response = await client.chat.completions.create(
-            model=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
+            model=os.getenv("AZURE_OPENAI_DEPLOYMENT_2"),
             messages=[
                 *messages,
                 {

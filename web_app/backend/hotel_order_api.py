@@ -258,74 +258,77 @@ async def query_hotel(request: HotelQueryRequest):
     """
     logging.info("Received hotel query request: %s", request.query)
 
-#     mock = '''
-#     {
-#     "summary": "这是我们为你推荐的杭州未来科技城地区的酒店选择。", 
-#     "contactName": "常高伟", 
-#     "contactMobile": "13800000000",
-#     "checkInDate": "2025-05-15",
-#     "checkOutDate": "2025-05-16",
-#     "guestNames": ["常高伟"],
-#     "roomNum": 1,
-#     "content": [
-#         {
-#           "roomTypeId": "562616256",
-#           "ratePlanID": "H4sIAAAAAAAEAEWQTUsCQRjHv0oMHRWenRxd95qXIEJEui7TOtbitCuzviQVdAm0Mj1lhw4dhKgOXSIyhL6Ms+Wpr9Azu0kwPMz85v/8n5dj0lRhx68JRZxChqgdfiiIQxbz2+XZQE8f9MdF3P8kGdJc/bwP9fg5njwi2xO1aq9paKpE1PWDWtj9o/Hd4OtpgjSq8JYoSx5slRALGQb7bpEW7GJho+gCAF1PWXI1wc2BbeVZLg8uuB0wtZTgjTqPWsZ3co8NLKdj5B4PPCErbYkF6epZEpGHOgqUZYFlLbZm2Q6AHgz1+fD7daZHN/Fb/2d+tZhd6vG1mWn0kkK0rCshNhOfbWw7alX9ZPJ/t2rihsfsRfmeKAtV4j3UWMxGJo7KXHHiBG0psaUD4TV2uWwbEwsgRynACTCLmZBHvR90QnRJt2aSTn8BcgtnVpcBAAA==",
-#           "roomType": "优选大床房",
-#           "bedType": "大床",
-#           "pricePerNight": 143.0,
-#           "orderAmount": 143.0,
-#           "images": "https://pavo.elongstatic.com/i/Hotel1080_800/nw_1jlFDLjh2wM.jpg",
-#           "available": true,
-#           "hotel": {
-#             "hotelID": "10042200",
-#             "hotelName": "杭之逸酒店(杭州未来科技城海创园店)",
-#             "address": "仓前街道向往路1008号(乐富海邦园)",
-#             "rating": "3",
-#             "price": "219"
-#           }
-#         },
-#         {
-#           "roomTypeId": "10159189",
-#           "ratePlanID": "H4sIAAAAAAAEAHWQz07CQBDG36XhyKG1LG25SkxMiBJCvDbbdpDCdiFbKBD1ZgwS+XNBLiYq8SIHjRdjvPgyboW3cFrh6GUz+83vm8x8Z0pbtCLfA6EUjKwijmgASkGR8ys5eiwdH1TXbys5nsjpjfwcxcMvJau0twyWDnjVQTs1pABKPZ97rd5Wje+uf1YLVMMK7UCZUX5YRLnOWD90AZoAtqaqKtFUW7dUQsxcLpM2Bz4/ZZHNGhYNamYQGA3D4Eagdhl3hJULMv92bN3xgnqNiJBExOKW2SCk7Zh5h2u2mqwsgDZrNOwk6y0e4sXz5mmGuku5C6zSZbi3tvsWIXSRW78s5Xi+WV5iEQ9ncnQvZ5Pvj7Gcvsrpbfw+RH9NAOynphKeGnaqfhIS7zKGiQnfhTKIIh3gNF21kId+mQq6I9w6uM0TyrpJahhJTrf2jHMMhiRPHnmfRy2c8hdsYrr4BZDhf0C7AQAA",
-#           "roomType": "LOFT 家庭三床房",
-#           "bedType": "其他",
-#           "pricePerNight": 310.0,
-#           "orderAmount": 310.0,
-#           "images": null,
-#           "available": true,
-#           "hotel": {
-#             "hotelID": "10043927",
-#             "hotelName": "淘米公寓(杭州阿里巴巴海创园店)",
-#             "address": "仓前街道西溪蓝海9幢1单元818室",
-#             "rating": "2",
-#             "price": "302"
-#           }
-#         },
-#         {
-#           "roomTypeId": "488354457",
-#           "ratePlanID": "H4sIAAAAAAAEADWPQUvDQBCF/8uei+wmpk16NRdBJJTifU2mGBrTsklai/WmUgu1Aam5CJVSERX0JqUX/0w22n/hbDWXYefb9x7zzklXdHq+B4LUqxUiDvkpkDqRT1kx+iIV0i3B7LrIrvLVXb5+Q3wMXnPQ3X4sn+V6jKjvh16n/0+Lh5vv1wxp1OAxOAEP923EpsVojepDRjVKWJWzmKXCBPB2i0exMmaPRfayWabIXR66EDSSABNZudoQuaj7eV/IyWyzuMRHMUrleC7T23w1kdMPOb0vPkfobwmAva3pAI+I4qavqoRJEGAv4bvggLD5ANMMU98x1Slw5nDBS5F7Am77iAeJqsQo3dWYXhtSgxlqVFHvh70OBv21VqaLX5F1w2BRAQAA",
-#           "roomType": "特价LOFT大床房",
-#           "bedType": "大床",
-#           "pricePerNight": 173.0,
-#           "orderAmount": 173.0,
-#           "images": "http://huoli-hotel.oss-cn-beijing.aliyuncs.com/hotel/image/1201/93397638/8/0005/11/Hotel960_640/000fR0Cm.jpg",
-#           "available": true,
-#           "hotel": {
-#             "hotelID": "10042137",
-#             "hotelName": "杭州锦绣假日酒店(余杭万达广场店)",
-#             "address": "余杭街道禹航路1076号万佳聚中心5-8层",
-#             "rating": "2",
-#             "price": "178"
-#           }
-#         }
-#     ]
-# }
-#     '''
+    mock = '''
+{
+    "checkInDate": "2025-05-15",
+    "checkOutDate": "2025-05-16",
+    "contactMobile": "13800000000",
+    "contactName": "常高伟",
+    "content": [
+        {
+            "available": true,
+            "bedType": "大床",
+            "hotel": {
+                "address": "仓前街道向往路1008号(乐富海邦园)",
+                "hotelID": "10042200",
+                "hotelName": "杭之逸酒店(杭州未来科技城海创园店)",
+                "price": "¥219起",
+                "rating": "5.0"
+            },
+            "images": "https://pavo.elongstatic.com/i/Hotel1080_800/nw_1jlFDLjh2wM.jpg",
+            "orderAmount": 143.0,
+            "pricePerNight": 143.0,
+            "ratePlanID": "H4sIAAAAAAAEAEWQTUsCQRjHv0oMHRWenRxd95qXIEJEui7TOtbitCuzviQVdAm0Mj1lhw4dhKgOXSIyhL6Ms+Wpr9Azu0kwPMz85v/8n5dj0lRhx68JRZxChqgdfiiIQxbz2+XZQE8f9MdF3P8kGdJc/bwP9fg5njwi2xO1aq9paKpE1PWDWtj9o/Hd4OtpgjSq8JYoSx5slRALGQb7bpEW7GJho+gCAF1PWXI1wc2BbeVZLg8uuB0wtZTgjTqPWsZ3co8NLKdj5B4PPCErbYkF6epZEpGHOgqUZYFlLbZm2Q6AHgz1+fD7daZHN/Fb/2d+tZhd6vG1mWn0kkK0rCshNhOfbWw7alX9ZPJ/t2rihsfsRfmeKAtV4j3UWMxGJo7KXHHiBG0psaUD4TV2uWwbEwsgRynACTCLmZBHvR90QnRJt2aSTn8BcgtnVpcBAAA=",
+            "roomType": "优选大床房",
+            "roomTypeId": "562616256"
+        },
+        {
+            "available": true,
+            "bedType": "1张大床",
+            "hotel": {
+                "address": "仓前街道向往路1008号(乐富海邦园)",
+                "hotelID": "10042200",
+                "hotelName": "杭之逸酒店(杭州未来科技城海创园店)",
+                "price": "¥219起",
+                "rating": "5.0"
+            },
+            "images": "https://pavo.elongstatic.com/i/Hotel1080_800/nw_1jlFe2Lzila.jpg",
+            "orderAmount": 164.0,
+            "pricePerNight": 164.0,
+            "ratePlanID": "H4sIAAAAAAAEADVQTUsCQRj+L4vHDjOzjrN6zUsQISJdl2kdcXFcZXbXjz4g6AMVTC+2lyARIepQ0CEqov5Ms+a/6F0/LsM7z8c7zzwnRlM1Wm5ZKCPHdgx1wOvCyBmL1+/leV/PH/TnIO79GDtGc8PoyXUcXS36H/HFFOAjUS51mwmB9dd0bQC47XrlRnvDxHf9xVMEqF/kgShI7u3lAa5K2fHrwg1C7tmYUGJRkxFkm5SyNMUsVTm2swRZDGGc2g6A4Ewmi0xmMsuyURJBCV6rcD9InoqmcfS4nI8Bd7jnCFkMJWTA22te+A7o/p5nejhZzi5hiHtjPbjX45vf96EevejRbfzWA39FCbG7Mu1DbD8ouUkBXigltKFcRxSEyvNu8nWLgF50ClzxrcKpCqd2yGW46gahNCEInSKKaXJkQO96rQZsWZeUmM7+AR1NfPGNAQAA",
+            "roomType": "精选大床房",
+            "roomTypeId": "482524738"
+        },
+        {
+            "available": true,
+            "bedType": "1张大床",
+            "hotel": {
+                "address": "仓前街道向往路1008号(乐富海邦园)",
+                "hotelID": "10042200",
+                "hotelName": "杭之逸酒店(杭州未来科技城海创园店)",
+                "price": "¥219起",
+                "rating": "5.0"
+            },
+            "images": "https://pavo.elongstatic.com/i/Hotel1080_800/nw_1jlHmNjCuaY.jpg",
+            "orderAmount": 184.0,
+            "pricePerNight": 184.0,
+            "ratePlanID": "H4sIAAAAAAAEAD2QyUoDQRCG36XxmEPPOGuu5iKIhBC8hnamgkPGSejJYlxOLiSBLJc4l4BDCIg5KF5ERfBl7I55C6uzeGmqv6r/r+WC1Hi1GfjASdbOEH7IToFkye/rXPQHYvYoPnuy800ypLbJiPGdTG4X3Q95nSI+Br/YrqmEJr7StQBxK4j8amuTkZPuYp4gjQusDvmQRfs5xOXzkm24pq6bRsnVNY1Squ0g/I+3gSKW5bi7jm07TomqthxYpcziurJPUpk8LWcj5B6LPAgLjRD7attvDmJP7fQ8Ff3xcnqDgeyMRO9BjAY/730xfBHDe/nWQX2ZA+ytRAc4alwvBmrpqBGGeAEeeJAHnmNtdNOpgfVwlmecbSu8E/AqRyxsrO5BqaHrlF5SUzPVY2F9EDWr6LI+jBJd/QF/ETJugQEAAA==",
+            "roomType": "豪华大床房",
+            "roomTypeId": "482524739"
+        }
+    ],
+    "guestNames": [
+        "常高伟"
+    ],
+    "roomNum": 1,
+    "summary": "这是我们为您推荐的位于杭州未来科技城的杭之逸酒店(杭州未来科技城海创园店)，以下是三款可订的大床房型，性价比高且有充足空房。"
+}
+    
+    '''
 
-#     # 将模拟数据转换为字典
-#     mock_data = json.loads(mock)
-#     return mock_data
+    # 将模拟数据转换为字典
+    mock_data = json.loads(mock)
+    return mock_data
 
     
     try:
