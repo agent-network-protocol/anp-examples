@@ -12,9 +12,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from examples_code.did_auth_middleware import did_auth_middleware
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+# logging.basicConfig(
+#     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+# )
 logger = logging.getLogger(__name__)
 
 # Create FastAPI app

@@ -151,6 +151,7 @@ Note:
 - The summary content must be in Chinese.
 - ensure the generated JSON is valid, formatted correctly, and can be directly parsed by a JSON parser.
 - The returned JSON should not include triple backticks, return pure JSON only
+- Try to use room types with images so you can see what the hotel looks like.
 
 """
 

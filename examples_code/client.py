@@ -14,9 +14,9 @@ from urllib.parse import urlparse
 from agent_connect.authentication import DIDWbaAuthHeader
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+# logging.basicConfig(
+#     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+# )
 logger = logging.getLogger(__name__)
 
 # Constants

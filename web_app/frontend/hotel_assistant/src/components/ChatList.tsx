@@ -125,9 +125,9 @@ const ChatList: React.FC<ChatListProps> = ({ messages, onSubmit, loading }) => {
           <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
             <Button 
               type="primary" 
-              onClick={() => onSubmit("帮我预订杭州未来科技城的酒店，后天入住，1晚")}
+              onClick={() => onSubmit("帮我预订杭州西湖周边的酒店，后天入住，1晚")}
             >
-              帮我预订杭州未来科技城的酒店，后天入住，1晚
+              帮我预订杭州西湖周边的酒店，后天入住，1晚
             </Button>
           </div>
         </Space>
