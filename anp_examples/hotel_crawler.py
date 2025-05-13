@@ -1,15 +1,17 @@
-from typing import Optional, Dict, Any, List, Union
+from typing import Optional, Dict, Any, List, Union, Tuple, Set
+import re
 import os
 import json
-import logging
 import asyncio
+import logging
+import httpx
 from pathlib import Path
 from openai import AsyncAzureOpenAI
 from dotenv import load_dotenv
 from anp_examples.utils.log_base import set_log_color_level
 from anp_examples.anp_tool import ANPTool  # Import ANPTool
 
-# Get the absolute path to the root directory
+# Get project root directory
 ROOT_DIR = Path(__file__).resolve().parent.parent
 
 # Load environment variables
@@ -30,10 +32,11 @@ class UserMemory:
         self.default_room_preference = "大床房"
         
         # User preferences (can be updated based on interactions)
-        self.preferred_hotel_chains = ["全季酒店"]
+        # self.preferred_hotel_chains = ["全季酒店"]
+        self.preferred_hotel_chains = [""]
         self.preferred_locations = []
         self.price_range = {"min": 0, "max": 1000}
-        self.preferred_amenities = ["免费Wi-Fi"]
+        self.preferred_amenities = [""]
         self.previous_bookings = []
         
     def to_dict(self) -> Dict[str, Any]:
@@ -147,7 +150,7 @@ Your Output should be a single JSON string with the following structure:
 Note: 
 - The summary content must be in Chinese.
 - ensure the generated JSON is valid, formatted correctly, and can be directly parsed by a JSON parser.
-- Return content contains only complete JSON, without any other characters, including backticks
+- The returned JSON should not include triple backticks, return pure JSON only
 
 """
 
@@ -373,11 +376,8 @@ async def hotel_crawler(
 
     # Final result generation
     try:
-        
         final_response = await client.chat.completions.create(
             model=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
-            # 移除temperature和top_p参数，使用默认值
-            max_completion_tokens=4096,
             messages=[
                 *messages,
                 {
@@ -391,28 +391,69 @@ async def hotel_crawler(
         logging.info("Final response generated:")
         logging.info(final_content)
 
-        content_dict = {}
-
-        try:
-            # 尝试解析JSON并格式化输出，提高可读性
-            content_dict = json.loads(final_content) if isinstance(final_content, str) else result["content"]
-            logging.info(json.dumps(content_dict, ensure_ascii=False, indent=4, sort_keys=True))
-        except json.JSONDecodeError:
-            # 如果不是有效的JSON，直接输出原内容
-            logging.error("Final response  Is not json: ")
+        # 处理JSON响应数据
+        parsed_content = parse_json_response(final_content)
+        logging.info("Parsed response content:")
+        if parsed_content:
+            logging.info(json.dumps(parsed_content, ensure_ascii=False, indent=4, sort_keys=True))
+            return parsed_content
+        else:
+            logging.error("Failed to parse response as JSON")
             logging.info(final_content)
-
-        return content_dict
+            return {}
         
     except Exception as e:
         logging.error(f"Error generating final response: {str(e)}")
         return {} 
 
+def parse_json_response(response_text):
+    """
+    解析响应文本，处理可能包含反引号的JSON字符串
+    
+    Args:
+        response_text: AI返回的原始文本响应
+        
+    Returns:
+        解析后的JSON对象，如果解析失败则返回None
+    """
+    if not isinstance(response_text, str):
+        # 如果不是字符串，可能已经是字典对象
+        return response_text
+    
+    # 尝试直接解析
+    try:
+        return json.loads(response_text)
+    except json.JSONDecodeError:
+        pass
+    
+    # 如果失败，尝试处理带有反引号的JSON
+    json_pattern = r'```(?:json)?\s*({[\s\S]*?})\s*```'
+    match = re.search(json_pattern, response_text)
+    if match:
+        json_str = match.group(1)
+        try:
+            return json.loads(json_str)
+        except json.JSONDecodeError:
+            pass
+    
+    # 如果还是失败，找到第一个大括号和最后一个大括号之间的内容
+    try:
+        start_idx = response_text.find('{')
+        end_idx = response_text.rfind('}')
+        if start_idx != -1 and end_idx != -1 and start_idx < end_idx:
+            json_str = response_text[start_idx:end_idx+1]
+            return json.loads(json_str)
+    except json.JSONDecodeError:
+        pass
+    
+    # 所有方法都失败，返回空字典
+    return {}
 
 async def main():
     """Main function"""
     # Example usage
-    query = "帮我预订北京望京的酒店，今天入住，1晚"
+    query = "帮我预订北京望京的酒店，后天入住，1晚"
+    query = "帮我预订杭州未来科技城的酒店，后天入住，1晚"
     
     # Simply display current user memory (without updating)
     logging.info("\nUser Memory Being Used:")

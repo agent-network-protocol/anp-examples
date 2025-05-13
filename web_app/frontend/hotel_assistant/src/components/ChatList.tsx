@@ -39,6 +39,7 @@ const RenderHotelData = (data: ChatResponse) => {
               <HotelCard 
                 key={room.roomTypeId}
                 room={room} 
+                apiData={data} // 传递整个API返回的数据对象
                 onPayClick={(roomTypeId) => {
                   message.success(`正在处理房型 ${roomTypeId} 的预订请求`);
                 }} 
@@ -124,9 +125,9 @@ const ChatList: React.FC<ChatListProps> = ({ messages, onSubmit, loading }) => {
           <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
             <Button 
               type="primary" 
-              onClick={() => onSubmit("查找酒店")}
+              onClick={() => onSubmit("帮我预订杭州未来科技城的酒店，后天入住，1晚")}
             >
-              查找酒店
+              帮我预订杭州未来科技城的酒店，后天入住，1晚
             </Button>
           </div>
         </Space>

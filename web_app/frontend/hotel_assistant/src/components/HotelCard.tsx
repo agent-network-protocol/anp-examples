@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Button, Card, Typography, Skeleton, Tag, message } from 'antd';
 import { createStyles } from 'antd-style';
 import { EnvironmentOutlined, StarOutlined, HomeOutlined } from '@ant-design/icons';
-import { RoomInfo } from '../hooks/useChat';
+import dayjs from 'dayjs';
+import { RoomInfo, ChatResponse } from '../hooks/useChat';
 import { createAndPayHotelOrder } from '../services/hotelService';
 import HotelOrderForm from './HotelOrderForm';
 import PayQrModal from './PayQrModal';
@@ -12,6 +13,7 @@ const { Title, Text } = Typography;
 interface HotelCardProps {
   room: RoomInfo;
   onPayClick: (roomTypeId: string) => void;
+  apiData?: ChatResponse; // Add API data prop
 }
 
 // 创建组件样式
@@ -123,7 +125,22 @@ const useStyles = createStyles(({ token, css }) => {
   };
 });
 
-const HotelCard: React.FC<HotelCardProps> = ({ room, onPayClick }) => {
+const HotelCard: React.FC<HotelCardProps> = ({ room, onPayClick, apiData }) => {
+  // 保留后端返回的数据，只在缺失时才提供默认值
+  // Preserve data from backend API, only provide defaults if fields are missing
+  if (apiData) {
+    // Only add default values if fields are missing
+    const today = dayjs();
+    apiData = {
+      ...apiData,
+      // Preserve existing data, only use defaults if needed
+      contactName: apiData.contactName || '常高伟',
+      contactMobile: apiData.contactMobile || '13800000000',
+      checkInDate: apiData.checkInDate || today.format('YYYY-MM-DD'),
+      checkOutDate: apiData.checkOutDate || today.add(1, 'day').format('YYYY-MM-DD'),
+      guestNames: apiData.guestNames || ['常高伟'],
+    };
+  }
   const { styles } = useStyles();
   const [loading, setLoading] = useState(true);
   const [bookingLoading, setBookingLoading] = useState(false);
@@ -148,28 +165,47 @@ const HotelCard: React.FC<HotelCardProps> = ({ room, onPayClick }) => {
     setFormVisible(false);
     setBookingLoading(true);
     try {
+      // 打印一下表单值以便调试
+      console.log('Form values:', formValues);
+      
+      // 直接使用字符串格式的日期，因为表单中使用的是Input而不是DatePicker
+      // 打印房间数据以便调试
+      console.log('Room data:', { 
+        roomTypeId: room.roomTypeId,
+        ratePlanID: room.ratePlanID
+      });
+      
       const response = await createAndPayHotelOrder({
-        hotelID: room.hotel.hotelId,
-        ratePlanID: room.roomTypeId,
+        hotelID: room.hotel.hotelID,
+        ratePlanID: room.ratePlanID, // 修正：使用正确的ratePlanID而不是roomTypeId
         roomNum: 1,
-        checkInDate: formValues.checkInDate.format('YYYY-MM-DD'),
-        checkOutDate: formValues.checkOutDate.format('YYYY-MM-DD'),
+        checkInDate: formValues.checkInDate, // 已经是字符串，不需要format
+        checkOutDate: formValues.checkOutDate, // 已经是字符串，不需要format
         guestNames: [formValues.guestName],
         orderAmount: room.pricePerNight,
-        contactName: formValues.guestName,
+        contactName: formValues.contactName,
         contactMobile: formValues.contactMobile,
         paymentType: 2,
       });
+      // 打印服务端返回的支付信息
+      console.log('Payment response data:', response.data);
+      console.log('Payment info fields:', response.data?.paymentInfo ? Object.keys(response.data.paymentInfo) : 'no paymentInfo');
+      
       if (response.success) {
+        // 正确处理字段名不匹配问题，服务端返回的是qrCodeImageUrl而不是qrCodeUrl
+        const qrCodeUrl = response.data?.paymentInfo?.qrCodeImageUrl || response.data?.paymentInfo?.qrCodeUrl || '';
+        console.log('QR code URL:', qrCodeUrl);
+        
         setPayModal({
           visible: true,
           orderNo: response.data?.orderNo || '',
-          qrCodeUrl: response.data?.paymentInfo.qrCodeUrl || '',
+          qrCodeUrl: qrCodeUrl,
         });
       } else {
         message.error(response.msg || '预订失败');
       }
     } catch (error) {
+      console.error('预订失败:', error);
       message.error('预订失败，请稍后重试');
     } finally {
       setBookingLoading(false);
@@ -287,6 +323,7 @@ const HotelCard: React.FC<HotelCardProps> = ({ room, onPayClick }) => {
         onCancel={() => setFormVisible(false)}
         onSubmit={handleOrderSubmit}
         loading={bookingLoading}
+        apiData={apiData} // Pass API data to the form
       />
       {/* 支付二维码弹窗 */}
       {payModal && (

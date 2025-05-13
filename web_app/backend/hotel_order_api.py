@@ -81,6 +81,13 @@ class HotelQueryRequest(BaseModel):
 class HotelQueryResponse(BaseModel):
     summary: str = Field(..., description="查询结果的简要总结")
     content: Union[List[Dict[str, Any]], str] = Field(..., description="推荐的酒店房型列表或错误信息")
+    # 添加额外字段以支持前端所需功能
+    checkInDate: Optional[str] = Field(None, description="入住日期")
+    checkOutDate: Optional[str] = Field(None, description="离店日期")
+    contactName: Optional[str] = Field(None, description="联系人姓名")
+    contactMobile: Optional[str] = Field(None, description="联系人手机号")
+    guestNames: Optional[List[str]] = Field(None, description="入住人姓名列表")
+    roomNum: Optional[int] = Field(None, description="房间数量")
 
 @router.post("/api/travel/hotel/order/create_and_pay", response_model=CreateAndPayHotelOrderResponse)
 async def create_and_pay_hotel_order(request: CreateAndPayHotelOrderRequest):
@@ -250,6 +257,78 @@ async def query_hotel(request: HotelQueryRequest):
     3. 返回格式化的酒店房型信息
     """
     logging.info("Received hotel query request: %s", request.query)
+
+    mock = '''
+    {
+    "summary": "这是我们为你推荐的杭州未来科技城地区的酒店选择。", 
+    "contactName": "常高伟", 
+    "contactMobile": "13800000000",
+    "checkInDate": "2025-05-15",
+    "checkOutDate": "2025-05-16",
+    "guestNames": ["常高伟"],
+    "roomNum": 1,
+    "content": [
+        {
+          "roomTypeId": "562616256",
+          "ratePlanID": "H4sIAAAAAAAEAEWQTUsCQRjHv0oMHRWenRxd95qXIEJEui7TOtbitCuzviQVdAm0Mj1lhw4dhKgOXSIyhL6Ms+Wpr9Azu0kwPMz85v/8n5dj0lRhx68JRZxChqgdfiiIQxbz2+XZQE8f9MdF3P8kGdJc/bwP9fg5njwi2xO1aq9paKpE1PWDWtj9o/Hd4OtpgjSq8JYoSx5slRALGQb7bpEW7GJho+gCAF1PWXI1wc2BbeVZLg8uuB0wtZTgjTqPWsZ3co8NLKdj5B4PPCErbYkF6epZEpGHOgqUZYFlLbZm2Q6AHgz1+fD7daZHN/Fb/2d+tZhd6vG1mWn0kkK0rCshNhOfbWw7alX9ZPJ/t2rihsfsRfmeKAtV4j3UWMxGJo7KXHHiBG0psaUD4TV2uWwbEwsgRynACTCLmZBHvR90QnRJt2aSTn8BcgtnVpcBAAA==",
+          "roomType": "优选大床房",
+          "bedType": "大床",
+          "pricePerNight": 143.0,
+          "orderAmount": 143.0,
+          "images": "https://pavo.elongstatic.com/i/Hotel1080_800/nw_1jlFDLjh2wM.jpg",
+          "available": true,
+          "hotel": {
+            "hotelID": "10042200",
+            "hotelName": "杭之逸酒店(杭州未来科技城海创园店)",
+            "address": "仓前街道向往路1008号(乐富海邦园)",
+            "rating": "3",
+            "price": "219"
+          }
+        },
+        {
+          "roomTypeId": "10159189",
+          "ratePlanID": "H4sIAAAAAAAEAHWQz07CQBDG36XhyKG1LG25SkxMiBJCvDbbdpDCdiFbKBD1ZgwS+XNBLiYq8SIHjRdjvPgyboW3cFrh6GUz+83vm8x8Z0pbtCLfA6EUjKwijmgASkGR8ys5eiwdH1TXbys5nsjpjfwcxcMvJau0twyWDnjVQTs1pABKPZ97rd5Wje+uf1YLVMMK7UCZUX5YRLnOWD90AZoAtqaqKtFUW7dUQsxcLpM2Bz4/ZZHNGhYNamYQGA3D4Eagdhl3hJULMv92bN3xgnqNiJBExOKW2SCk7Zh5h2u2mqwsgDZrNOwk6y0e4sXz5mmGuku5C6zSZbi3tvsWIXSRW78s5Xi+WV5iEQ9ncnQvZ5Pvj7Gcvsrpbfw+RH9NAOynphKeGnaqfhIS7zKGiQnfhTKIIh3gNF21kId+mQq6I9w6uM0TyrpJahhJTrf2jHMMhiRPHnmfRy2c8hdsYrr4BZDhf0C7AQAA",
+          "roomType": "LOFT 家庭三床房",
+          "bedType": "其他",
+          "pricePerNight": 310.0,
+          "orderAmount": 310.0,
+          "images": null,
+          "available": true,
+          "hotel": {
+            "hotelID": "10043927",
+            "hotelName": "淘米公寓(杭州阿里巴巴海创园店)",
+            "address": "仓前街道西溪蓝海9幢1单元818室",
+            "rating": "2",
+            "price": "302"
+          }
+        },
+        {
+          "roomTypeId": "488354457",
+          "ratePlanID": "H4sIAAAAAAAEADWPQUvDQBCF/8uei+wmpk16NRdBJJTifU2mGBrTsklai/WmUgu1Aam5CJVSERX0JqUX/0w22n/hbDWXYefb9x7zzklXdHq+B4LUqxUiDvkpkDqRT1kx+iIV0i3B7LrIrvLVXb5+Q3wMXnPQ3X4sn+V6jKjvh16n/0+Lh5vv1wxp1OAxOAEP923EpsVojepDRjVKWJWzmKXCBPB2i0exMmaPRfayWabIXR66EDSSABNZudoQuaj7eV/IyWyzuMRHMUrleC7T23w1kdMPOb0vPkfobwmAva3pAI+I4qavqoRJEGAv4bvggLD5ANMMU98x1Slw5nDBS5F7Am77iAeJqsQo3dWYXhtSgxlqVFHvh70OBv21VqaLX5F1w2BRAQAA",
+          "roomType": "特价LOFT大床房",
+          "bedType": "大床",
+          "pricePerNight": 173.0,
+          "orderAmount": 173.0,
+          "images": "http://huoli-hotel.oss-cn-beijing.aliyuncs.com/hotel/image/1201/93397638/8/0005/11/Hotel960_640/000fR0Cm.jpg",
+          "available": true,
+          "hotel": {
+            "hotelID": "10042137",
+            "hotelName": "杭州锦绣假日酒店(余杭万达广场店)",
+            "address": "余杭街道禹航路1076号万佳聚中心5-8层",
+            "rating": "2",
+            "price": "178"
+          }
+        }
+    ]
+}
+    '''
+
+    # 将模拟数据转换为字典
+    mock_data = json.loads(mock)
+    return mock_data
+    
+
+
     
     try:
 
@@ -273,11 +352,21 @@ async def query_hotel(request: HotelQueryRequest):
         logging.info("Hotel crawler query completed successfully")
             
         # Return the successful result
-        # return {
-        #     "summary": result.get("summary", "这是我们为你推荐的酒店房型"),
-        #     "content": result.get("content", [])
-        # }
-        return result
+        if isinstance(result, dict) and 'summary' in result and 'content' in result:
+            # 如果结果已经包含必需字段，直接返回
+            return result
+        else:
+            # 确保返回符合模型要求的结构
+            return {
+                "summary": result.get("summary", "暂未找到合适的房型"),
+                "content": result.get("content", []),
+                "contactName": result.get("contactName", ""),
+                "contactMobile": result.get("contactMobile", ""),
+                "checkInDate": result.get("checkInDate", ""),
+                "checkOutDate": result.get("checkOutDate", ""),
+                "guestNames": result.get("guestNames", [""]),
+                "roomNum": result.get("roomNum", 1)
+            }
         
     except Exception as e:
         logging.error(f"Error in hotel query: {str(e)}")
