@@ -1,5 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { message } from 'antd';
+import { getNotifications, Notification } from '../services/hotelService';
 
 // 定义新的数据结构接口
 export interface ChatResponse {
@@ -28,10 +29,13 @@ export interface RoomInfo {
 
 // 定义消息接口
 interface ChatMessage {
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'system';
   content: string | ChatResponse;
   isHotelData?: boolean;
   loading?: boolean;
+  isNotification?: boolean;
+  notificationType?: string;
+  timestamp?: string;
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/';
@@ -41,6 +45,9 @@ export const useChat = (onFirstMessage?: (message: string) => void) => {
   const [loading, setLoading] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const isFirstMessageRef = useRef(true);
+  const [lastNotificationCheck, setLastNotificationCheck] = useState<Date>(new Date());
+  const [notificationCount, setNotificationCount] = useState<number>(0);
+  const processedNotificationIds = useRef<Set<string>>(new Set());
 
   // 处理消息查询
   const handleSender = async (query: string) => {
@@ -153,11 +160,66 @@ export const useChat = (onFirstMessage?: (message: string) => void) => {
     }
   };
 
+  // 检查通知的函数
+  const checkNotifications = async () => {
+    try {
+      const response = await getNotifications();
+      
+      if (response.has_notification && response.notifications.length > 0) {
+        // 计算新通知数量
+        const newNotifications = response.notifications.filter(
+          notification => !processedNotificationIds.current.has(notification.id)
+        );
+        
+        // 如果有新通知，将它们添加到聊天列表
+        if (newNotifications.length > 0) {
+          const notificationMessages: ChatMessage[] = newNotifications.map(notification => ({
+            role: 'assistant',
+            content: `${notification.title}\n\n${notification.content}`,
+            isNotification: true,
+            notificationType: notification.type,
+            timestamp: notification.timestamp
+          }));
+          
+          // 添加新通知到消息列表
+          setMessages(prev => [...prev, ...notificationMessages]);
+          
+          // 记录已处理的通知ID
+          newNotifications.forEach(notification => {
+            processedNotificationIds.current.add(notification.id);
+          });
+          
+          // 更新通知计数
+          setNotificationCount(count => count + newNotifications.length);
+        }
+      }
+      
+      // 更新上次检查时间
+      setLastNotificationCheck(new Date());
+    } catch (error) {
+      console.error('Error checking notifications:', error);
+    }
+  };
+  
+  // 定期检查通知
+  useEffect(() => {
+    // 首次加载后立即检查一次
+    checkNotifications();
+    
+    // 设置定时器，每5秒检查一次
+    const intervalId = setInterval(checkNotifications, 5000);
+    
+    // 组件卸载时清理定时器
+    return () => clearInterval(intervalId);
+  }, []);
+
   return {
     messages,
     setMessages,
     onSubmit,
     loading,
     cancelRequest,
+    notificationCount,
+    setNotificationCount,
   };
 };

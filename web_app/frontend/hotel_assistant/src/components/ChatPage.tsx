@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useStyles } from '../styles/useStyles';
 import { useChat } from '../hooks/useChat';
 import ChatSider from './ChatSider';
@@ -15,7 +15,11 @@ interface Conversation {
   group: string;
 }
 
-const ChatPage: React.FC = () => {
+interface ChatPageProps {
+  onNotificationCountChange?: (count: number) => void;
+}
+
+const ChatPage: React.FC<ChatPageProps> = ({ onNotificationCountChange }) => {
   const { styles } = useStyles();
 
   // 会话状态
@@ -54,7 +58,16 @@ const ChatPage: React.FC = () => {
     onSubmit,
     loading,
     cancelRequest,
+    notificationCount,
+    setNotificationCount,
   } = useChat(handleFirstMessage);
+  
+  // 当通知数量变化时，通过回调通知父组件
+  useEffect(() => {
+    if (onNotificationCountChange) {
+      onNotificationCountChange(notificationCount);
+    }
+  }, [notificationCount, onNotificationCountChange]);
 
   // 附件状态
   const [attachmentsOpen, setAttachmentsOpen] = useState(false);

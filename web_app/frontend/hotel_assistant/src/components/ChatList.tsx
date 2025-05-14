@@ -80,6 +80,30 @@ const RenderHotelData = (data: ChatResponse, setMessages: React.Dispatch<React.S
 
 // 处理消息内容
 const processMessageContent = (message: any, setMessages: React.Dispatch<React.SetStateAction<any[]>>, messages: any[]) => {
+  // 如果是通知消息
+  if (message.isNotification) {
+    return (
+      <div style={{
+        background: '#f0f8ff',
+        borderRadius: '8px',
+        borderLeft: '4px solid #1890ff',
+        paddingLeft: '8px'
+      }}>
+        <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
+          {message.notificationType || '系统通知'}
+        </div>
+        <div>
+          {typeof message.content === 'string' ? renderMarkdown(message.content) : JSON.stringify(message.content)}
+        </div>
+        {message.timestamp && (
+          <div style={{ fontSize: '12px', color: '#999', marginTop: '8px', textAlign: 'right' }}>
+            {new Date(message.timestamp).toLocaleString('zh-CN')}
+          </div>
+        )}
+      </div>
+    );
+  }
+  
   // 如果是酒店数据
   if (message.isHotelData && typeof message.content === 'object' && message.content !== null) {
     return RenderHotelData(message.content, setMessages, messages);

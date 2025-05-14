@@ -292,6 +292,73 @@ POST /api/travel/hotel/order/get_detail
 1. 调用酒店订单详情接口
 2. 返回订单详情信息
 
+## 获取系统通知
+
+该接口用于获取系统推送的通知信息，客户端可以定期调用此接口以获取最新通知。
+
+### 接口地址
+
+```
+GET /api/travel/hotel/notifications
+```
+
+### 请求参数
+
+无需参数，直接发起GET请求即可。
+
+### 响应参数
+
+| 参数名 | 类型 | 描述 |
+| ----- | ---- | --- |
+| has_notification | boolean | 是否存在通知 |
+| notifications | array | 通知列表 |
+| notifications[].id | string | 通知ID |
+| notifications[].type | string | 通知类型，如"系统通知"、"订单通知"、"促销通知"等 |
+| notifications[].title | string | 通知标题 |
+| notifications[].content | string | 通知内容 |
+| notifications[].timestamp | string | 通知时间，格式为ISO8601标准时间字符串 |
+| notifications[].read | boolean | 是否已读 |
+
+### 成功响应示例
+
+```json
+{
+  "has_notification": true,
+  "notifications": [
+    {
+      "id": "not12345",
+      "type": "订单通知",
+      "title": "订单状态更新",
+      "content": "您的订单 HO202505111627001 已确认支付成功，酒店已收到您的预订信息。",
+      "timestamp": "2025-05-14T12:10:00+08:00",
+      "read": false
+    },
+    {
+      "id": "not12346",
+      "type": "系统通知",
+      "title": "系统维护通知",
+      "content": "系统将于今晚23:00-次日凌晨2:00进行例行维护，期间部分服务可能受到影响。",
+      "timestamp": "2025-05-14T11:30:00+08:00",
+      "read": true
+    }
+  ]
+}
+```
+
+### 无通知响应示例
+
+```json
+{
+  "has_notification": false,
+  "notifications": []
+}
+```
+
+### 处理逻辑
+
+1. 检查是否有新的通知信息
+2. 返回通知列表（如果有）
+
 ## 错误码说明
 
 当API调用出现错误时，会返回相应的错误信息和状态码：

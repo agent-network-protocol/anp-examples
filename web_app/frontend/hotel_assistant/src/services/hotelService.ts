@@ -132,4 +132,40 @@ export const getHotelOrderDetail = async (params: GetHotelOrderDetailParams): Pr
   } catch (error: any) {
     throw error;
   }
+};
+
+// Notification types
+export interface Notification {
+  id: string;
+  type: string;
+  title: string;
+  content: string;
+  timestamp: string;
+  read: boolean;
+}
+
+export interface NotificationsResponse {
+  has_notification: boolean;
+  notifications: Notification[];
+}
+
+// Get notifications API function
+export const getNotifications = async (): Promise<NotificationsResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/travel/hotel/notifications`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    const data = await response.json();
+    return data;
+  } catch (error: any) {
+    console.error('Error fetching notifications:', error);
+    // Return empty notifications in case of error
+    return {
+      has_notification: false,
+      notifications: [],
+    };
+  }
 }; 

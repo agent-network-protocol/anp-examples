@@ -88,6 +88,11 @@ class HotelQueryResponse(BaseModel):
     contactMobile: Optional[str] = Field(None, description="联系人手机号")
     guestNames: Optional[List[str]] = Field(None, description="入住人姓名列表")
     roomNum: Optional[int] = Field(None, description="房间数量")
+    
+# 定义通知响应模型
+class NotificationResponse(BaseModel):
+    has_notification: bool = Field(..., description="是否存在通知")
+    notifications: List[Dict[str, Any]] = Field(default_factory=list, description="通知列表")
 
 @router.post("/api/travel/hotel/order/create_and_pay", response_model=CreateAndPayHotelOrderResponse)
 async def create_and_pay_hotel_order(request: CreateAndPayHotelOrderRequest):
@@ -378,3 +383,37 @@ async def query_hotel(request: HotelQueryRequest):
             "content": f"处理酒店查询请求时发生错误: {str(e)}"
         }
 
+
+    
+@router.get("/api/travel/hotel/notifications", response_model=NotificationResponse)
+async def get_notifications():
+    """
+    获取系统通知接口
+    
+    1. 检查是否有新通知
+    2. 返回通知列表
+    """
+    # # Mock notification data
+    # current_time = "2025-05-14T12:16:26+08:00"  # Using the current time from the context
+    
+    # # Generate random notifications based on current time for demo purposes
+    # mock_notifications = [
+    #     {
+    #         "id": f"not{hash(current_time) % 10000}",
+    #         "type": "订单通知",
+    #         "title": "订单状态更新",
+    #         "content": "您的订单 HO202505111627001 已确认支付成功，酒店已收到您的预订信息。",
+    #         "timestamp": current_time,
+    #         "read": False
+    #     }
+    # ]
+    
+    # 可以设置条件来控制是否返回通知
+    # 例如：只在某个时间段内返回通知
+    # if int(current_time.split(":")[1]) % 3 == 0:
+    #     return {"has_notification": False, "notifications": []}
+    # else:
+    #     return {"has_notification": True, "notifications": mock_notifications}
+    
+    # 当前始终返回通知
+    return {"has_notification": True, "notifications": []}

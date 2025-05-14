@@ -33,7 +33,7 @@ class UserMemory:
         
         # User preferences (can be updated based on interactions)
         # self.preferred_hotel_chains = ["全季酒店"]
-        self.preferred_hotel_chains = [""]
+        self.preferred_hotel_chains = ["全季", "亚朵", "如家"]
         self.preferred_locations = []
         self.price_range = {"min": 0, "max": 1000}
         self.preferred_amenities = [""]
@@ -140,10 +140,10 @@ Your Output should be a single JSON string with the following structure:
       }}
     }},
     {{
-      // 第二个房型，最多只返回三个房型
+      // 第二个酒店的房型，最多只返回三个
     }},
     {{
-      // 第三个房型，最多只返回三个房型
+      // 第三个酒店的房型，最多只返回三个
     }}
   ]
 }}
@@ -153,6 +153,7 @@ Note:
 - ensure the generated JSON is valid, formatted correctly, and can be directly parsed by a JSON parser.
 - The returned JSON should not include triple backticks, return pure JSON only
 - Try to use room types with images so you can see what the hotel looks like.
+- content中的的房间最好是三个酒店，能够让用户自由选择
 
 """
 
@@ -455,7 +456,7 @@ async def main():
     """Main function"""
     # Example usage
     query = "帮我预订北京望京的酒店，后天入住，1晚"
-    query = "帮我预订杭州未来科技城的酒店，后天入住，1晚"
+    query = "帮我预订杭州西湖周边的酒店，后天入住，1晚"
     
     # Simply display current user memory (without updating)
     logging.info("\nUser Memory Being Used:")
