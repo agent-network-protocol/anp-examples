@@ -23,11 +23,7 @@ interface HotelOrderResponse {
     paymentInfo: {
       paymentUrl?: string;
       qrCodeUrl?: string;
-      // Add the field used by the backend API
       qrCodeImageUrl?: string;
-      customerOrderNo?: string;
-      paymentType?: number;
-      orderAmount?: string;
     };
   } | null;
 }
@@ -39,66 +35,28 @@ interface GetHotelOrderDetailParams {
 interface HotelOrderDetailResponse {
   success: boolean;
   msg: string;
-  data: {
-    // Basic order information
-    customerOrderNo: string;
-    orderAmount: number;
-    createTime: string;
-    payLimitTime?: string;
-    
-    // Hotel and room details
-    hotelId: number;
-    hotelName: string;
-    hotelAddress: string;
-    roomTypeName: string;
-    bedTypeName: string;
-    ratePlanId: string;
-    pricePerDay: string;
-    
-    // Check-in information
-    checkInDate: string;
-    checkOutDate: string;
-    numberOfNights: number;
-    numberOfRooms: number;
-    guestNames: string | string[];
-    
-    // Contact information
-    contactName: string;
-    contactMobile: string;
-    contactEmail?: string;
-    
-    // Payment status
-    payStatus: number; // 0: unpaid, 1: paid
-    orderStatus: number; // Order status code
-    paymentType: number; // Payment method code
-    payTime?: string; // Payment time if paid
-    
-    // Other fields
-    breakfastDesc?: string;
-    cancelDesc?: string;
-    freeCancelLatestTime?: string;
-    arriveTime?: string;
-    remark?: string;
-  } | null;
+  data: any;
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/';
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 
 export const createAndPayHotelOrder = async (params: CreateHotelOrderParams): Promise<HotelOrderResponse> => {
-  // // 独立mock开关
+  // 独立mock开关
   // if (USE_MOCK) {
   //   return {
-  //     success: true,
-  //     msg: '酒店订单创建并支付成功',
-  //     data: {
-  //       orderNo: 'MOCK202406010001',
-  //       paymentInfo: {
-  //         paymentUrl: 'https://mock-payment-url.com/pay/MOCK202406010001',
-  //         qrCodeUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=MOCK202406010001',
-  //       },
-  //     },
-  //   };
+  //     "success": true,
+  //     "msg": "酒店订单创建并支付成功",
+  //     "data": {
+  //       "orderNo": "202505140017450000000084",
+  //       "paymentInfo": {
+  //         // "customerOrderNo": "202505140017450000000084",
+  //         "qrCodeImageUrl": "https://agent-connect.ai/agents/travel/hotel/static/qrcodes/202505140017450000000084.png",
+  //         // "paymentType": 2,
+  //         // "orderAmount": "143.00"
+  //       }
+  //     }
+  //   }
   // }
   try {
     const response = await fetch(`${API_BASE_URL}/api/travel/hotel/order/create_and_pay`, {
@@ -118,25 +76,48 @@ export const createAndPayHotelOrder = async (params: CreateHotelOrderParams): Pr
 export const getHotelOrderDetail = async (params: GetHotelOrderDetailParams): Promise<HotelOrderDetailResponse> => {
   // if (USE_MOCK) {
   //   return {
-  //     success: true,
-  //     msg: '查询酒店订单详情成功',
-  //     data: {
-  //       orderNo: params.customerOrderNo,
-  //       hotelName: '全季酒店(北京三里屯店)',
-  //       hotelAddress: '北京市朝阳区三里屯路5号',
-  //       roomType: '标准大床房',
-  //       checkInDate: '2025-05-20',
-  //       checkOutDate: '2025-05-22',
-  //       roomNum: 1,
-  //       guestNames: ['张三'],
-  //       contactName: '张三',
-  //       contactMobile: '13800138000',
-  //       orderAmount: 698.00,
-  //       orderStatus: '已支付',
-  //       paymentType: '支付宝',
-  //       createTime: '2025-05-11 16:27:30',
-  //     },
-  //   };
+  //     "success": true,
+  //     "msg": "查询酒店订单详情成功",
+  //     "data": {
+  //       "numberOfRooms": 1,
+  //       "numberOfNights": 1,
+  //       "arriveTime": null,
+  //       "checkInDate": "2025-05-15 00:00:00",
+  //       "checkOutDate": "2025-05-16 00:00:00",
+  //       "guestNames": "常高伟",
+  //       "remark": "",
+  //       "orderAmount": 143.0,
+  //       "orderStatus": 2,
+  //       "payStatus": 1,
+  //       "payTime": "2025-05-14 00:18:09",
+  //       "paymentType": 1,
+  //       "transactionNo": "202505140018096076631414",
+  //       "refundAmount": null,
+  //       "refundSuccessTime": null,
+  //       "refundTransactionNo": null,
+  //       "refundTransactionMethods": 0,
+  //       "hotelId": 10042200,
+  //       "hotelName": "杭之逸酒店(杭州未来科技城海创园店)",
+  //       "hotelAddress": "仓前街道向往路1008号(乐富海邦园)",
+  //       "roomTypeName": "优选大床房",
+  //       "bedTypeName": "大床",
+  //       "ratePlanId": "H4sIAAAAAAAEAEWQTUsCQRjHv0oMHRWenRxd95qXIEJEui7TOtbitCuzviQVdAm0Mj1lhw4dhKgOXSIyhL6Ms+Wpr9Azu0kwPMz85v/8n5dj0lRhx68JRZxChqgdfiiIQxbz2+XZQE8f9MdF3P8kGdJc/bwP9fg5njwi2xO1aq9paKpE1PWDWtj9o/Hd4OtpgjSq8JYoSx5slRALGQb7bpEW7GJho+gCAF1PWXI1wc2BbeVZLg8uuB0wtZTgjTqPWsZ3co8NLKdj5B4PPCErbYkF6epZEpGHOgqUZYFlLbZm2Q6AHgz1+fD7daZHN/Fb/2d+tZhd6vG1mWn0kkK0rCshNhOfbWw7alX9ZPJ/t2rihsfsRfmeKAtV4j3UWMxGJo7KXHHiBG0psaUD4TV2uWwbEwsgRynACTCLmZBHvR90QnRJt2aSTn8BcgtnVpcBAAA=",
+  //       "pricePerDay": "143",
+  //       "breakfastCountPerDay": null,
+  //       "breakfastDesc": "无早餐",
+  //       "cancelPolicyType": 2,
+  //       "cancelDesc": "2025-05-15 18:00前免费取消，之后不可取消",
+  //       "freeCancelLatestTime": "2025-05-15 18:00:00",
+  //       "confirmationNumber": null,
+  //       "contactName": "常高伟",
+  //       "contactMobile": "13800000000",
+  //       "contactEmail": null,
+  //       "payLimitTime": "2025-05-14 00:47:45",
+  //       "unFinishedReason": null,
+  //       "createTime": "2025-05-14 00:17:45",
+  //       "customerOrderNo": "202505140017450000000084"
+  //     }
+  //   }
   // }
   try {
     const response = await fetch(`${API_BASE_URL}/api/travel/hotel/order/get_detail`, {

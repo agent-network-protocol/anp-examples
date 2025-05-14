@@ -100,23 +100,8 @@ export const DESIGN_GUIDE = {
 export const SENDER_PROMPTS: GetProp<typeof Prompts, 'items'> = [
   {
     key: '1',
-    description: 'Upgrades',
+    description: '帮我预订杭州西湖周边的酒店，后天入住，1晚',
     icon: React.createElement(ScheduleOutlined),
-  },
-  {
-    key: '2',
-    description: 'Components',
-    icon: React.createElement(ProductOutlined),
-  },
-  {
-    key: '3',
-    description: 'RICH Guide',
-    icon: React.createElement(FileSearchOutlined),
-  },
-  {
-    key: '4',
-    description: 'Installation Introduction',
-    icon: React.createElement(AppstoreAddOutlined),
   },
 ];
 

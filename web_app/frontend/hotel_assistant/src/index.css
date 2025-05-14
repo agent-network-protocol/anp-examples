@@ -87,21 +87,13 @@ button {
   height: 100%;
 }
 
-/* 自定义滚动条样式 */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* 隐藏 Bubble 组件的滚动条 */
+.ant-bubble-list {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  overflow-y: auto;
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.2);
+.ant-bubble-list::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, and Opera */
 }

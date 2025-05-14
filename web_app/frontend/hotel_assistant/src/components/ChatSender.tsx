@@ -3,29 +3,30 @@ import { Button, Flex } from 'antd';
 import { Attachments, Prompts, Sender } from '@ant-design/x';
 import { CloudUploadOutlined, PaperClipOutlined } from '@ant-design/icons';
 import { useStyles } from '../styles/useStyles';
-import { SENDER_PROMPTS } from '../constants/chatData';
 import type { GetProp } from 'antd';
 
 interface ChatSenderProps {
   inputValue: string;
   setInputValue: React.Dispatch<React.SetStateAction<string>>;
   onSubmit: (val: string) => void;
-  loading: boolean;
   attachmentsOpen: boolean;
   setAttachmentsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   attachedFiles: GetProp<typeof Attachments, 'items'>;
   setAttachedFiles: React.Dispatch<React.SetStateAction<GetProp<typeof Attachments, 'items'>>>;
+  loading: boolean;
+  onCancel: () => void; // 新增 onCancel 属性
 }
 
 const ChatSender: React.FC<ChatSenderProps> = ({
   inputValue,
   setInputValue,
   onSubmit,
-  loading,
   attachmentsOpen,
   setAttachmentsOpen,
   attachedFiles,
   setAttachedFiles,
+  loading,
+  onCancel, // 新增 onCancel 参数
 }) => {
   const { styles } = useStyles();
 
@@ -45,10 +46,10 @@ const ChatSender: React.FC<ChatSenderProps> = ({
           type === 'drop'
             ? { title: 'Drop file here' }
             : {
-                icon: <CloudUploadOutlined />,
-                title: 'Upload files',
-                description: 'Click or drag files to this area to upload',
-              }
+              icon: <CloudUploadOutlined />,
+              title: 'Upload files',
+              description: 'Click or drag files to this area to upload',
+            }
         }
       />
     </Sender.Header>
@@ -56,46 +57,42 @@ const ChatSender: React.FC<ChatSenderProps> = ({
 
   return (
     <>
-      {/* 🌟 提示词 */}
-      {/* <Prompts
-        items={SENDER_PROMPTS}
-        onItemClick={(info) => {
-          onSubmit(info.data.description as string);
-        }}
-        styles={{ item: { padding: '6px 12px' } }}
-        className={styles.senderPrompt}
-      /> */}
       {/* 🌟 输入框 */}
       <Sender
         value={inputValue}
-        // header={senderHeader}
+        header={senderHeader}
         onSubmit={() => {
-          onSubmit(inputValue);
-          setInputValue('');
+          if (!loading) {
+            onSubmit(inputValue);
+            setInputValue('');
+          }
         }}
         onChange={setInputValue}
-        onCancel={() => {
-          // 如果需要取消请求，可以在这里实现
-        }}
-        // prefix={
-        //   <Button
-        //     type="text"
-        //     icon={<PaperClipOutlined style={{ fontSize: 18 }} />}
-        //     onClick={() => setAttachmentsOpen(!attachmentsOpen)}
-        //   />
-        // }
-        loading={loading}
+        onCancel={onCancel} // 使用传入的 onCancel 函数
+        prefix={
+          <Button
+            type="text"
+            icon={<PaperClipOutlined style={{ fontSize: 18 }} />}
+            onClick={() => setAttachmentsOpen(!attachmentsOpen)}
+          />
+        }
         className={styles.sender}
-        // allowSpeech
-        // actions={(_, info) => {
-        //   const { SendButton, LoadingButton, SpeechButton } = info.components;
-        //   return (
-        //     <Flex gap={4}>
-        //       <SpeechButton className={styles.speechButton} />
-        //       {loading ? <LoadingButton type="default" /> : <SendButton type="primary" />}
-        //     </Flex>
-        //   );
-        // }}
+        allowSpeech
+        actions={(_, info) => {
+          const { SendButton, LoadingButton } = info.components;
+          return (
+            <Flex gap={4}>
+              {loading ? (
+                <div onClick={onCancel}>
+                  <LoadingButton type="default"/>
+                </div>
+
+              ) : (
+                <SendButton type="primary" />
+              )}
+            </Flex>
+          );
+        }}
         placeholder="Ask or input / use skills"
       />
     </>

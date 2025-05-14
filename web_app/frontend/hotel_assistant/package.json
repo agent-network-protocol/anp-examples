@@ -16,11 +16,13 @@
     "antd": "^5.25.0",
     "antd-style": "^3.7.1",
     "dayjs": "^1.11.13",
+    "markdown-it": "^14.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
+    "@types/markdown-it": "^14.1.2",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react": "^4.3.4",
