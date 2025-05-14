@@ -81,7 +81,7 @@ ANP网络探索工具是一个基于Agent Network Protocol (ANP)的应用程序�
    python /anp-examples/web_app/backend/anp_examples_backend.py
    ```
 
-3. 打开浏览器访问：`http://localhost:5000`
+3. 打开浏览器访问：`http://localhost:5005`
 
 4. 在输入框中输入您的问题，并提供智能体URL（可选，默认为`https://agent-search.ai/ad.json`）
 
@@ -194,7 +194,7 @@ By following these steps, you can run a web application locally.
    python /anp-examples/web_app/backend/anp_examples_backend.py
    ```
 
-3. Open browser and visit: `http://localhost:8000`
+3. Open browser and visit: `http://localhost:5005`
 
 4. Enter your question in the input box and provide an agent URL (optional, default is `https://agent-search.ai/ad.json`)
 
