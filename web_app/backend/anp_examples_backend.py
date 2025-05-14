@@ -360,7 +360,7 @@ if __name__ == "__main__":
     import uvicorn
 
     # Startup port
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 5005))
 
     # Start uvicorn server
     uvicorn.run(
