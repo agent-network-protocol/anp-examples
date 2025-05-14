@@ -9,7 +9,8 @@ from dotenv import load_dotenv
 from anp_examples.utils.log_base import set_log_color_level
 from anp_examples.anp_tool import ANPTool  # Import ANPTool
 from openai import AsyncOpenAI,OpenAI
-from config import validate_config,DASHSCOPE_API_KEY,DASHSCOPE_BASE_URL,DASHSCOPE_MODEL_NAME
+from config import validate_config, DASHSCOPE_API_KEY, DASHSCOPE_BASE_URL, DASHSCOPE_MODEL_NAME, OPENAI_API_KEY, \
+    OPENAI_BASE_URL
 
 # Get the absolute path to the root directory
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -181,11 +182,21 @@ async def simple_crawl(
     #     azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
     # )
 
-# LLM change to Qwen2.5-14b
-    client = AsyncOpenAI(
-        api_key = DASHSCOPE_API_KEY,
-        base_url = DASHSCOPE_BASE_URL
-    )
+    # 根据 MODEL_PROVIDER 环境变量选择不同的客户端
+    model_provider = os.getenv("MODEL_PROVIDER", "dashscope").lower()
+
+    if model_provider == "dashscope":
+        client = AsyncOpenAI(
+            api_key=DASHSCOPE_API_KEY,
+            base_url=DASHSCOPE_BASE_URL
+        )
+    elif model_provider == "openai":
+        client = AsyncOpenAI(
+            api_key=OPENAI_API_KEY,
+            base_url=OPENAI_BASE_URL
+        )
+    else:
+        raise ValueError(f"Unsupported MODEL_PROVIDER: {model_provider}")
 
     # Get initial URL content
     try:
