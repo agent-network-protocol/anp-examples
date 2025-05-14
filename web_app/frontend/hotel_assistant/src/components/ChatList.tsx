@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useCallback } from 'react';
-import { Button, Space, Typography } from 'antd';
+import { Button, Space, Typography, Collapse } from 'antd';
+import type { CollapseProps } from 'antd';
 import { Bubble, Welcome } from '@ant-design/x';
 import MarkdownIt from 'markdown-it';
 import {
@@ -82,25 +83,38 @@ const RenderHotelData = (data: ChatResponse, setMessages: React.Dispatch<React.S
 const processMessageContent = (message: any, setMessages: React.Dispatch<React.SetStateAction<any[]>>, messages: any[]) => {
   // 如果是通知消息
   if (message.isNotification) {
+    const items: CollapseProps['items'] = [
+      {
+        key: '1',
+        label: message.notificationType || '系统通知',
+        children: (
+          <>
+            <div>
+              {typeof message.content === 'string' ? renderMarkdown(message.content) : JSON.stringify(message.content)}
+            </div>
+            {message.timestamp && (
+              <div style={{ fontSize: '12px', color: '#999', marginTop: '8px', textAlign: 'right' }}>
+                {new Date(message.timestamp).toLocaleString('zh-CN')}
+              </div>
+            )}
+          </>
+        ),
+      },
+    ];
+
     return (
-      <div style={{
-        background: '#f0f8ff',
-        borderRadius: '8px',
-        borderLeft: '4px solid #1890ff',
-        paddingLeft: '8px'
-      }}>
-        <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
-          {message.notificationType || '系统通知'}
-        </div>
-        <div>
-          {typeof message.content === 'string' ? renderMarkdown(message.content) : JSON.stringify(message.content)}
-        </div>
-        {message.timestamp && (
-          <div style={{ fontSize: '12px', color: '#999', marginTop: '8px', textAlign: 'right' }}>
-            {new Date(message.timestamp).toLocaleString('zh-CN')}
-          </div>
-        )}
-      </div>
+      <Collapse 
+        items={items} 
+        defaultActiveKey={['1']} 
+        ghost
+        expandIconPosition="end"
+        style={{ 
+          background: '#f0f8ff', 
+          borderRadius: '8px',
+          borderLeft: '4px solid #1890ff',
+          marginBottom: 0
+        }}
+      />
     );
   }
   
