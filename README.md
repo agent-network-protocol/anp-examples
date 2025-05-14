@@ -112,7 +112,7 @@ ANP网络探索工具是一个基于Agent Network Protocol (ANP)的应用程序�
    ```
 
 4. 观察日志：
-![完整的运行日志](anp-examples.log.md)
+[完整的运行日志](anp-examples.log.md)
 
 ---
 
@@ -225,4 +225,4 @@ By following these steps, you can run a web application locally.
    python /anp-examples/web_app/backend/anp_examples_backend.py
    ```
 4. Observe logs:
-![Complete operation log](anp-examples.log.md)
+[Complete operation log](anp-examples.log.md)
