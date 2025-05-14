@@ -3,16 +3,20 @@ import requests
 from pathlib import Path
 import os
 import json
-from fastapi import APIRouter, HTTPException
+import asyncio
+import datetime
+import time
+from fastapi import APIRouter, HTTPException, BackgroundTasks
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any, Union
 import sys
 
-# Import hotel_crawler function
+# Import hotel_crawler and travel_guide_generator functions
 sys_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 if sys_path not in sys.path:
     sys.path.append(sys_path)
 from anp_examples.hotel_crawler import hotel_crawler
+from anp_examples.travel_guide_generator import generate_travel_guide
 
 # Get project root directory
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -93,6 +97,9 @@ class HotelQueryResponse(BaseModel):
 class NotificationResponse(BaseModel):
     has_notification: bool = Field(..., description="是否存在通知")
     notifications: List[Dict[str, Any]] = Field(default_factory=list, description="通知列表")
+
+# 全局变量，存储出行指南通知
+travel_guide_notifications = []
 
 @router.post("/api/travel/hotel/order/create_and_pay", response_model=CreateAndPayHotelOrderResponse)
 async def create_and_pay_hotel_order(request: CreateAndPayHotelOrderRequest):
@@ -205,14 +212,14 @@ async def create_and_pay_hotel_order(request: CreateAndPayHotelOrderRequest):
         raise HTTPException(status_code=500, detail=f"处理酒店订单创建和支付请求时发生错误: {str(e)}")
 
 @router.post("/api/travel/hotel/order/get_detail", response_model=HotelOrderDetailResponse)
-async def get_hotel_order_detail(request: HotelOrderDetailRequest):
+async def get_hotel_order_detail(request: HotelOrderDetailRequest, background_tasks: BackgroundTasks):
     """
     查询酒店订单详情接口
     
     1. 调用酒店订单详情接口
     2. 返回订单详情信息
     """
-    logging.info("Received get hotel order detail request")
+    logging.info("Received get hotel order detail request: %s", request.customerOrderNo)
     
     try:
         # 调用酒店订单详情接口
@@ -240,11 +247,26 @@ async def get_hotel_order_detail(request: HotelOrderDetailRequest):
                 "data": None
             }
         
+        # 检查支付状态，如果已支付则生成出行指南
+        if (order_detail_result.get("success") and 
+            order_detail_result.get("data", {}).get("payStatus") == 1):
+            # 添加异步任务生成出行指南并将其添加到通知列表
+            async def process_travel_guide():
+                # 调用新的travel_guide_generator模块中的generate_travel_guide函数
+                notification = await generate_travel_guide(order_detail_result)
+                # 将生成的通知添加到全局通知列表
+                global travel_guide_notifications
+                travel_guide_notifications.append(notification)
+                logging.info(f"Added travel guide notification: {notification['title']}")
+                
+            background_tasks.add_task(process_travel_guide)
+            logging.info("Added background task to generate travel guide")
+        
         # 返回成功结果
         return {
             "success": True,
-            "msg": "查询酒店订单详情成功",
-            "data": order_detail_result.get("data", {})
+            "msg": "请求成功",
+            "data": order_detail_result.get("data")
         }
         
     except Exception as e:
@@ -393,27 +415,58 @@ async def get_notifications():
     1. 检查是否有新通知
     2. 返回通知列表
     """
-    # # Mock notification data
-    # current_time = "2025-05-14T12:16:26+08:00"  # Using the current time from the context
+    # global travel_guide_notifications
     
-    # # Generate random notifications based on current time for demo purposes
-    # mock_notifications = [
-    #     {
-    #         "id": f"not{hash(current_time) % 10000}",
-    #         "type": "订单通知",
-    #         "title": "订单状态更新",
-    #         "content": "您的订单 HO202505111627001 已确认支付成功，酒店已收到您的预订信息。",
-    #         "timestamp": current_time,
-    #         "read": False
-    #     }
-    # ]
+    # 获取当前时间作为时间戳
+    current_time = datetime.datetime.now().isoformat()
     
-    # 可以设置条件来控制是否返回通知
-    # 例如：只在某个时间段内返回通知
-    # if int(current_time.split(":")[1]) % 3 == 0:
-    #     return {"has_notification": False, "notifications": []}
-    # else:
-    #     return {"has_notification": True, "notifications": mock_notifications}
+    # # 如果有出行指南通知，则返回并清空列表
+    # if travel_guide_notifications:
+    #     # 记录通知数量
+    #     logging.info(f"Returning {len(travel_guide_notifications)} travel guide notifications")
+
+    #     logging.info(travel_guide_notifications[0])
+        
+    #     # 保存当前通知列表的副本用于返回
+    #     notifications_to_return = travel_guide_notifications.copy()
+        
+    #     # 清空通知列表，避免重复发送
+    #     travel_guide_notifications = []
+    #     logging.info("Notifications list cleared after sending")
+        
+    #     return {"has_notification": True, "notifications": notifications_to_return}
     
-    # 当前始终返回通知
-    return {"has_notification": True, "notifications": []}
+    # return {"has_notification": False, "notifications": []}
+
+    # 使用真实出行指南数据构造mock通知
+    default_notification = {
+        "id": "guide_1747204409",
+        "type": "出行指南",
+        "title": "杭之逸酒店(杭州未来科技城海创园店)出行指南",
+        "content": "# 欢迎致辞  \n欢迎您入住杭之逸酒店（杭州未来科技城海创园店）！我们位于仓前街道向往路1008号（乐富海邦园），致力于为您提供温馨、便捷的入住体验。希望本指南能帮助您高效规划在杭一晚的小憩之旅。\n\n## 1. 酒店设施与服务介绍  \n### 1.1 客房设施  \n- 优选大床房：1.8m舒适大床、智能恒温空调  \n- 免费高速Wi-Fi覆盖全楼层  \n- 42寸液晶电视、独立浴缸、24小时热水  \n- mini吧（收费）、电子保险箱、熨斗/熨衣板  \n\n### 1.2 酒店公共设施  \n- 自助早餐厅（07:00–10:00）  \n- 健身房（06:00–22:00）  \n- 商务中心（打印、传真、复印）  \n- 免费停车场（需提前登记）  \n\n### 1.3 贴心服务  \n- 24小时前台、行李寄存  \n- 叫醒服务、洗衣/干洗（附加费）  \n- 接送机/火车站服务（需预约）  \n- 本地电话/票务/餐饮咨询  \n\n> **温馨提示**：请您在抵店前24小时内，提前联系前台预约接送及洗衣服务。\n\n---\n\n## 2. 交通选项  \n### 2.1 机场 → 酒店  \n- 出租车：约50 km，人民币180–220元，时长约50分钟  \n- 机场大巴+地铁：机场T1/T2→大巴至城站→地铁1号线（黄家埠站）转3号线（未来科技城站）→出租（2 km）\n\n### 2.2 火车站 → 酒店  \n- 杭州东站：出租车约15 km，人民币80–100元，时长约30分钟  \n- 地铁：东站乘地铁4号线至沈塘桥→转3号线至未来科技城站→出租（2 km）\n\n### 2.3 公共交通  \n- 地铁3号线：未来科技城站 → 出口步行约1 km  \n- 公交：345路、930路 → “向往路口”站  \n\n### 2.4 出租车／网约车  \n- 滴滴快车/顺风车：起步价约11元，最终费用视里程浮动  \n- 路边可拦车，夜间高峰易打车困难，建议提前预约\n\n> **贴士**：未来科技城地铁3号线运营至23:00，请留意末班车时间。\n\n---\n\n## 3. 周边景点和地标  \n### 3.1 步行可达（≤2 km）  \n- 乐富海邦园购物小区：特色咖啡、手作甜品  \n- 向往路中央绿地公园：休闲散步／晨跑好去处  \n- 社区周边小店：茶饮、简餐  \n\n### 3.2 短途旅行（车程≤30 min）  \n- 钱塘江湿地公园（约5 km）：河畔栈道、观鸟胜地  \n- 浙江未来科技城科创中心（约3 km）：现代建筑群，周边咖啡馆聚集  \n- 杭州国家动漫产业园（约8 km）：主题展览、创意市集  \n\n---\n\n## 4. 当地美食推荐  \n### 4.1 著名当地菜  \n- 西湖醋鱼：色泽红亮、酸甜开胃  \n- 东坡肉：肥而不腻、入口即化  \n- 龙井虾仁：清新茶香与鲜虾完美融合  \n\n### 4.2 热门餐厅  \n- 知味观未来科技城店（中式杭帮菜）  \n- 海底捞（乐富海邦园店）  \n- 老娘舅（向往路店）– 家常杭帮小吃  \n- 星巴克、麦当劳、肯德基（商区连锁）  \n\n> **美食TIP**：晚餐高峰期常需等位，建议18:00前或21:00后就餐。\n\n---\n\n## 5. 购物区域  \n### 5.1 商场  \n- 乐富海邦园商业街（步行1 min）– 日用、快餐、咖啡  \n- 林安大悦城（约6 km）– 品牌集合、影院、美食广场  \n- 坂田百货（约5 km）– 特色小店、潮流服饰  \n\n### 5.2 市场及精品店  \n- 向往路早餐夜市（每日06:00–09:00，18:00–21:00）  \n- 科创园文创市集（周末特定时间）  \n\n---\n\n## 6. 实用信息  \n### 6.1 紧急联系方式  \n- 酒店前台：+86-571-xxxxxxxx（按“0”转接）  \n- 火警／救护：119／120／110  \n- 医院：杭州未来科技城医院 +86-571-xxxxxxxx  \n\n### 6.2 实用短语  \n- “请问洗衣要多久？” → qǐng wèn xǐ yī yào duō jiǔ?  \n- “附近有推荐的餐厅吗？” → fù jìn yǒu tuī jiàn de cān tīng ma?  \n- “我需要叫出租车。” → wǒ xū yào jiào chū zū chē.  \n\n---\n\n## 7. 基于住宿时长的行程建议  \n### 一晚快速体验  \n- 15:00 抵店，办理入住 → 客房休息  \n- 17:30 步行至社区绿地散步，拍照打卡  \n- 18:30 于酒店周边餐厅品尝杭帮晚餐  \n- 20:00 返回房间，可至商务中心打印行程资料或放松观影  \n- 06:30 清晨至向往路公园晨跑／散步  \n- 07:30 回酒店享用自助早餐  \n- 09:00 办理退房，前往下一个目的地或返程  \n\n> **行程TIP**：因仅一晚住宿，请保持充足睡眠，第二天精力充沛，游览更尽兴。\n\n---\n\n如需更多帮助或定制行程，请随时联系酒店前台。祝您在杭州未来科技城的入住愉快！",
+        "hotelId": 10042200,
+        "timestamp": current_time,
+        "read": False,
+        "visited_urls": [
+            "https://agent-search.ai/ad.json",
+            "https://agent-search.ai/api_files/tourist-attraction-search-interface.yaml",
+            "https://agent-search.ai/api_files/hotel-search-interface.yaml"
+        ],
+        "crawled_documents": 3
+    }
+    
+    # # 使用订单通知作为测试
+    # order_notification = {
+    #     "id": f"order{int(time.time())}",
+    #     "type": "订单通知",
+    #     "title": "订单状态更新",
+    #     "content": "您的订单 HO202505111627001 已确认支付成功，酒店已收到您的预订信息。",
+    #     "timestamp": current_time,
+    #     "read": False
+    # }
+    
+    # 在测试环境返回默认通知
+    mock_notifications = [default_notification]
+    logging.info("Returning mock notifications for testing")
+    
+    return {"has_notification": True, "notifications": mock_notifications}
