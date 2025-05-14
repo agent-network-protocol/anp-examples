@@ -45,7 +45,7 @@ const ChatSider: React.FC<ChatSiderProps> = ({
       {/* 🌟 Logo */}
       <div className={`${styles.logo} logo`}>
         <img
-          src="https://avatars.githubusercontent.com/u/199323856?s=48&v=4"
+          src="/anp.png"
           draggable={false}
           alt="logo"
           width={24}

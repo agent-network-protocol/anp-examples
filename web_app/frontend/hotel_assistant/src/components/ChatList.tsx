@@ -105,7 +105,7 @@ const processMessageContent = (message: any, setMessages: React.Dispatch<React.S
     return (
       <Collapse 
         items={items} 
-        defaultActiveKey={['1']} 
+        // defaultActiveKey={['1']} 
         ghost
         expandIconPosition="end"
         style={{ 

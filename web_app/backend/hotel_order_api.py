@@ -285,77 +285,77 @@ async def query_hotel(request: HotelQueryRequest):
     """
     logging.info("Received hotel query request: %s", request.query)
 
-    mock = '''
-{
-    "checkInDate": "2025-05-15",
-    "checkOutDate": "2025-05-16",
-    "contactMobile": "13800000000",
-    "contactName": "常高伟",
-    "content": [
-        {
-            "available": true,
-            "bedType": "大床",
-            "hotel": {
-                "address": "仓前街道向往路1008号(乐富海邦园)",
-                "hotelID": "10042200",
-                "hotelName": "杭之逸酒店(杭州未来科技城海创园店)",
-                "price": "¥219起",
-                "rating": "5.0"
-            },
-            "images": "https://pavo.elongstatic.com/i/Hotel1080_800/nw_1jlFDLjh2wM.jpg",
-            "orderAmount": 143.0,
-            "pricePerNight": 143.0,
-            "ratePlanID": "H4sIAAAAAAAEAEWQTUsCQRjHv0oMHRWenRxd95qXIEJEui7TOtbitCuzviQVdAm0Mj1lhw4dhKgOXSIyhL6Ms+Wpr9Azu0kwPMz85v/8n5dj0lRhx68JRZxChqgdfiiIQxbz2+XZQE8f9MdF3P8kGdJc/bwP9fg5njwi2xO1aq9paKpE1PWDWtj9o/Hd4OtpgjSq8JYoSx5slRALGQb7bpEW7GJho+gCAF1PWXI1wc2BbeVZLg8uuB0wtZTgjTqPWsZ3co8NLKdj5B4PPCErbYkF6epZEpGHOgqUZYFlLbZm2Q6AHgz1+fD7daZHN/Fb/2d+tZhd6vG1mWn0kkK0rCshNhOfbWw7alX9ZPJ/t2rihsfsRfmeKAtV4j3UWMxGJo7KXHHiBG0psaUD4TV2uWwbEwsgRynACTCLmZBHvR90QnRJt2aSTn8BcgtnVpcBAAA=",
-            "roomType": "优选大床房",
-            "roomTypeId": "562616256"
-        },
-        {
-            "available": true,
-            "bedType": "1张大床",
-            "hotel": {
-                "address": "仓前街道向往路1008号(乐富海邦园)",
-                "hotelID": "10042200",
-                "hotelName": "杭之逸酒店(杭州未来科技城海创园店)",
-                "price": "¥219起",
-                "rating": "5.0"
-            },
-            "images": "https://pavo.elongstatic.com/i/Hotel1080_800/nw_1jlFe2Lzila.jpg",
-            "orderAmount": 164.0,
-            "pricePerNight": 164.0,
-            "ratePlanID": "H4sIAAAAAAAEADVQTUsCQRj+L4vHDjOzjrN6zUsQISJdl2kdcXFcZXbXjz4g6AMVTC+2lyARIepQ0CEqov5Ms+a/6F0/LsM7z8c7zzwnRlM1Wm5ZKCPHdgx1wOvCyBmL1+/leV/PH/TnIO79GDtGc8PoyXUcXS36H/HFFOAjUS51mwmB9dd0bQC47XrlRnvDxHf9xVMEqF/kgShI7u3lAa5K2fHrwg1C7tmYUGJRkxFkm5SyNMUsVTm2swRZDGGc2g6A4Ewmi0xmMsuyURJBCV6rcD9InoqmcfS4nI8Bd7jnCFkMJWTA22te+A7o/p5nejhZzi5hiHtjPbjX45vf96EevejRbfzWA39FCbG7Mu1DbD8ouUkBXigltKFcRxSEyvNu8nWLgF50ClzxrcKpCqd2yGW46gahNCEInSKKaXJkQO96rQZsWZeUmM7+AR1NfPGNAQAA",
-            "roomType": "精选大床房",
-            "roomTypeId": "482524738"
-        },
-        {
-            "available": true,
-            "bedType": "1张大床",
-            "hotel": {
-                "address": "仓前街道向往路1008号(乐富海邦园)",
-                "hotelID": "10042200",
-                "hotelName": "杭之逸酒店(杭州未来科技城海创园店)",
-                "price": "¥219起",
-                "rating": "5.0"
-            },
-            "images": "https://pavo.elongstatic.com/i/Hotel1080_800/nw_1jlHmNjCuaY.jpg",
-            "orderAmount": 184.0,
-            "pricePerNight": 184.0,
-            "ratePlanID": "H4sIAAAAAAAEAD2QyUoDQRCG36XxmEPPOGuu5iKIhBC8hnamgkPGSejJYlxOLiSBLJc4l4BDCIg5KF5ERfBl7I55C6uzeGmqv6r/r+WC1Hi1GfjASdbOEH7IToFkye/rXPQHYvYoPnuy800ypLbJiPGdTG4X3Q95nSI+Br/YrqmEJr7StQBxK4j8amuTkZPuYp4gjQusDvmQRfs5xOXzkm24pq6bRsnVNY1Squ0g/I+3gSKW5bi7jm07TomqthxYpcziurJPUpk8LWcj5B6LPAgLjRD7attvDmJP7fQ8Ff3xcnqDgeyMRO9BjAY/730xfBHDe/nWQX2ZA+ytRAc4alwvBmrpqBGGeAEeeJAHnmNtdNOpgfVwlmecbSu8E/AqRyxsrO5BqaHrlF5SUzPVY2F9EDWr6LI+jBJd/QF/ETJugQEAAA==",
-            "roomType": "豪华大床房",
-            "roomTypeId": "482524739"
-        }
-    ],
-    "guestNames": [
-        "常高伟"
-    ],
-    "roomNum": 1,
-    "summary": "这是我们为您推荐的位于杭州未来科技城的杭之逸酒店(杭州未来科技城海创园店)，以下是三款可订的大床房型，性价比高且有充足空房。"
-}
+#     mock = '''
+# {
+#     "checkInDate": "2025-05-15",
+#     "checkOutDate": "2025-05-16",
+#     "contactMobile": "13800000000",
+#     "contactName": "常高伟",
+#     "content": [
+#         {
+#             "available": true,
+#             "bedType": "大床",
+#             "hotel": {
+#                 "address": "仓前街道向往路1008号(乐富海邦园)",
+#                 "hotelID": "10042200",
+#                 "hotelName": "杭之逸酒店(杭州未来科技城海创园店)",
+#                 "price": "¥219起",
+#                 "rating": "5.0"
+#             },
+#             "images": "https://pavo.elongstatic.com/i/Hotel1080_800/nw_1jlFDLjh2wM.jpg",
+#             "orderAmount": 143.0,
+#             "pricePerNight": 143.0,
+#             "ratePlanID": "H4sIAAAAAAAEAEWQTUsCQRjHv0oMHRWenRxd95qXIEJEui7TOtbitCuzviQVdAm0Mj1lhw4dhKgOXSIyhL6Ms+Wpr9Azu0kwPMz85v/8n5dj0lRhx68JRZxChqgdfiiIQxbz2+XZQE8f9MdF3P8kGdJc/bwP9fg5njwi2xO1aq9paKpE1PWDWtj9o/Hd4OtpgjSq8JYoSx5slRALGQb7bpEW7GJho+gCAF1PWXI1wc2BbeVZLg8uuB0wtZTgjTqPWsZ3co8NLKdj5B4PPCErbYkF6epZEpGHOgqUZYFlLbZm2Q6AHgz1+fD7daZHN/Fb/2d+tZhd6vG1mWn0kkK0rCshNhOfbWw7alX9ZPJ/t2rihsfsRfmeKAtV4j3UWMxGJo7KXHHiBG0psaUD4TV2uWwbEwsgRynACTCLmZBHvR90QnRJt2aSTn8BcgtnVpcBAAA=",
+#             "roomType": "优选大床房",
+#             "roomTypeId": "562616256"
+#         },
+#         {
+#             "available": true,
+#             "bedType": "1张大床",
+#             "hotel": {
+#                 "address": "仓前街道向往路1008号(乐富海邦园)",
+#                 "hotelID": "10042200",
+#                 "hotelName": "杭之逸酒店(杭州未来科技城海创园店)",
+#                 "price": "¥219起",
+#                 "rating": "5.0"
+#             },
+#             "images": "https://pavo.elongstatic.com/i/Hotel1080_800/nw_1jlFe2Lzila.jpg",
+#             "orderAmount": 164.0,
+#             "pricePerNight": 164.0,
+#             "ratePlanID": "H4sIAAAAAAAEADVQTUsCQRj+L4vHDjOzjrN6zUsQISJdl2kdcXFcZXbXjz4g6AMVTC+2lyARIepQ0CEqov5Ms+a/6F0/LsM7z8c7zzwnRlM1Wm5ZKCPHdgx1wOvCyBmL1+/leV/PH/TnIO79GDtGc8PoyXUcXS36H/HFFOAjUS51mwmB9dd0bQC47XrlRnvDxHf9xVMEqF/kgShI7u3lAa5K2fHrwg1C7tmYUGJRkxFkm5SyNMUsVTm2swRZDGGc2g6A4Ewmi0xmMsuyURJBCV6rcD9InoqmcfS4nI8Bd7jnCFkMJWTA22te+A7o/p5nejhZzi5hiHtjPbjX45vf96EevejRbfzWA39FCbG7Mu1DbD8ouUkBXigltKFcRxSEyvNu8nWLgF50ClzxrcKpCqd2yGW46gahNCEInSKKaXJkQO96rQZsWZeUmM7+AR1NfPGNAQAA",
+#             "roomType": "精选大床房",
+#             "roomTypeId": "482524738"
+#         },
+#         {
+#             "available": true,
+#             "bedType": "1张大床",
+#             "hotel": {
+#                 "address": "仓前街道向往路1008号(乐富海邦园)",
+#                 "hotelID": "10042200",
+#                 "hotelName": "杭之逸酒店(杭州未来科技城海创园店)",
+#                 "price": "¥219起",
+#                 "rating": "5.0"
+#             },
+#             "images": "https://pavo.elongstatic.com/i/Hotel1080_800/nw_1jlHmNjCuaY.jpg",
+#             "orderAmount": 184.0,
+#             "pricePerNight": 184.0,
+#             "ratePlanID": "H4sIAAAAAAAEAD2QyUoDQRCG36XxmEPPOGuu5iKIhBC8hnamgkPGSejJYlxOLiSBLJc4l4BDCIg5KF5ERfBl7I55C6uzeGmqv6r/r+WC1Hi1GfjASdbOEH7IToFkye/rXPQHYvYoPnuy800ypLbJiPGdTG4X3Q95nSI+Br/YrqmEJr7StQBxK4j8amuTkZPuYp4gjQusDvmQRfs5xOXzkm24pq6bRsnVNY1Squ0g/I+3gSKW5bi7jm07TomqthxYpcziurJPUpk8LWcj5B6LPAgLjRD7attvDmJP7fQ8Ff3xcnqDgeyMRO9BjAY/730xfBHDe/nWQX2ZA+ytRAc4alwvBmrpqBGGeAEeeJAHnmNtdNOpgfVwlmecbSu8E/AqRyxsrO5BqaHrlF5SUzPVY2F9EDWr6LI+jBJd/QF/ETJugQEAAA==",
+#             "roomType": "豪华大床房",
+#             "roomTypeId": "482524739"
+#         }
+#     ],
+#     "guestNames": [
+#         "常高伟"
+#     ],
+#     "roomNum": 1,
+#     "summary": "这是我们为您推荐的位于杭州未来科技城的杭之逸酒店(杭州未来科技城海创园店)，以下是三款可订的大床房型，性价比高且有充足空房。"
+# }
     
-    '''
+#     '''
 
-    # 将模拟数据转换为字典
-    mock_data = json.loads(mock)
-    return mock_data
+#     # 将模拟数据转换为字典
+#     mock_data = json.loads(mock)
+#     return mock_data
 
     
     try:
@@ -415,45 +415,45 @@ async def get_notifications():
     1. 检查是否有新通知
     2. 返回通知列表
     """
-    # global travel_guide_notifications
+    global travel_guide_notifications
     
-    # 获取当前时间作为时间戳
-    current_time = datetime.datetime.now().isoformat()
-    
-    # # 如果有出行指南通知，则返回并清空列表
-    # if travel_guide_notifications:
-    #     # 记录通知数量
-    #     logging.info(f"Returning {len(travel_guide_notifications)} travel guide notifications")
+    # 如果有出行指南通知，则返回并清空列表
+    if travel_guide_notifications:
+        # 记录通知数量
+        logging.info(f"Returning {len(travel_guide_notifications)} travel guide notifications")
 
-    #     logging.info(travel_guide_notifications[0])
+        logging.info(travel_guide_notifications[0])
         
-    #     # 保存当前通知列表的副本用于返回
-    #     notifications_to_return = travel_guide_notifications.copy()
+        # 保存当前通知列表的副本用于返回
+        notifications_to_return = travel_guide_notifications.copy()
         
-    #     # 清空通知列表，避免重复发送
-    #     travel_guide_notifications = []
-    #     logging.info("Notifications list cleared after sending")
+        # 清空通知列表，避免重复发送
+        travel_guide_notifications = []
+        logging.info("Notifications list cleared after sending")
         
-    #     return {"has_notification": True, "notifications": notifications_to_return}
+        return {"has_notification": True, "notifications": notifications_to_return}
     
-    # return {"has_notification": False, "notifications": []}
+    return {"has_notification": False, "notifications": []}
+
+    # 获取当前时间作为时间戳
+    # current_time = datetime.datetime.now().isoformat()
 
     # 使用真实出行指南数据构造mock通知
-    default_notification = {
-        "id": "guide_1747204409",
-        "type": "出行指南",
-        "title": "杭之逸酒店(杭州未来科技城海创园店)出行指南",
-        "content": "# 欢迎致辞  \n欢迎您入住杭之逸酒店（杭州未来科技城海创园店）！我们位于仓前街道向往路1008号（乐富海邦园），致力于为您提供温馨、便捷的入住体验。希望本指南能帮助您高效规划在杭一晚的小憩之旅。\n\n## 1. 酒店设施与服务介绍  \n### 1.1 客房设施  \n- 优选大床房：1.8m舒适大床、智能恒温空调  \n- 免费高速Wi-Fi覆盖全楼层  \n- 42寸液晶电视、独立浴缸、24小时热水  \n- mini吧（收费）、电子保险箱、熨斗/熨衣板  \n\n### 1.2 酒店公共设施  \n- 自助早餐厅（07:00–10:00）  \n- 健身房（06:00–22:00）  \n- 商务中心（打印、传真、复印）  \n- 免费停车场（需提前登记）  \n\n### 1.3 贴心服务  \n- 24小时前台、行李寄存  \n- 叫醒服务、洗衣/干洗（附加费）  \n- 接送机/火车站服务（需预约）  \n- 本地电话/票务/餐饮咨询  \n\n> **温馨提示**：请您在抵店前24小时内，提前联系前台预约接送及洗衣服务。\n\n---\n\n## 2. 交通选项  \n### 2.1 机场 → 酒店  \n- 出租车：约50 km，人民币180–220元，时长约50分钟  \n- 机场大巴+地铁：机场T1/T2→大巴至城站→地铁1号线（黄家埠站）转3号线（未来科技城站）→出租（2 km）\n\n### 2.2 火车站 → 酒店  \n- 杭州东站：出租车约15 km，人民币80–100元，时长约30分钟  \n- 地铁：东站乘地铁4号线至沈塘桥→转3号线至未来科技城站→出租（2 km）\n\n### 2.3 公共交通  \n- 地铁3号线：未来科技城站 → 出口步行约1 km  \n- 公交：345路、930路 → “向往路口”站  \n\n### 2.4 出租车／网约车  \n- 滴滴快车/顺风车：起步价约11元，最终费用视里程浮动  \n- 路边可拦车，夜间高峰易打车困难，建议提前预约\n\n> **贴士**：未来科技城地铁3号线运营至23:00，请留意末班车时间。\n\n---\n\n## 3. 周边景点和地标  \n### 3.1 步行可达（≤2 km）  \n- 乐富海邦园购物小区：特色咖啡、手作甜品  \n- 向往路中央绿地公园：休闲散步／晨跑好去处  \n- 社区周边小店：茶饮、简餐  \n\n### 3.2 短途旅行（车程≤30 min）  \n- 钱塘江湿地公园（约5 km）：河畔栈道、观鸟胜地  \n- 浙江未来科技城科创中心（约3 km）：现代建筑群，周边咖啡馆聚集  \n- 杭州国家动漫产业园（约8 km）：主题展览、创意市集  \n\n---\n\n## 4. 当地美食推荐  \n### 4.1 著名当地菜  \n- 西湖醋鱼：色泽红亮、酸甜开胃  \n- 东坡肉：肥而不腻、入口即化  \n- 龙井虾仁：清新茶香与鲜虾完美融合  \n\n### 4.2 热门餐厅  \n- 知味观未来科技城店（中式杭帮菜）  \n- 海底捞（乐富海邦园店）  \n- 老娘舅（向往路店）– 家常杭帮小吃  \n- 星巴克、麦当劳、肯德基（商区连锁）  \n\n> **美食TIP**：晚餐高峰期常需等位，建议18:00前或21:00后就餐。\n\n---\n\n## 5. 购物区域  \n### 5.1 商场  \n- 乐富海邦园商业街（步行1 min）– 日用、快餐、咖啡  \n- 林安大悦城（约6 km）– 品牌集合、影院、美食广场  \n- 坂田百货（约5 km）– 特色小店、潮流服饰  \n\n### 5.2 市场及精品店  \n- 向往路早餐夜市（每日06:00–09:00，18:00–21:00）  \n- 科创园文创市集（周末特定时间）  \n\n---\n\n## 6. 实用信息  \n### 6.1 紧急联系方式  \n- 酒店前台：+86-571-xxxxxxxx（按“0”转接）  \n- 火警／救护：119／120／110  \n- 医院：杭州未来科技城医院 +86-571-xxxxxxxx  \n\n### 6.2 实用短语  \n- “请问洗衣要多久？” → qǐng wèn xǐ yī yào duō jiǔ?  \n- “附近有推荐的餐厅吗？” → fù jìn yǒu tuī jiàn de cān tīng ma?  \n- “我需要叫出租车。” → wǒ xū yào jiào chū zū chē.  \n\n---\n\n## 7. 基于住宿时长的行程建议  \n### 一晚快速体验  \n- 15:00 抵店，办理入住 → 客房休息  \n- 17:30 步行至社区绿地散步，拍照打卡  \n- 18:30 于酒店周边餐厅品尝杭帮晚餐  \n- 20:00 返回房间，可至商务中心打印行程资料或放松观影  \n- 06:30 清晨至向往路公园晨跑／散步  \n- 07:30 回酒店享用自助早餐  \n- 09:00 办理退房，前往下一个目的地或返程  \n\n> **行程TIP**：因仅一晚住宿，请保持充足睡眠，第二天精力充沛，游览更尽兴。\n\n---\n\n如需更多帮助或定制行程，请随时联系酒店前台。祝您在杭州未来科技城的入住愉快！",
-        "hotelId": 10042200,
-        "timestamp": current_time,
-        "read": False,
-        "visited_urls": [
-            "https://agent-search.ai/ad.json",
-            "https://agent-search.ai/api_files/tourist-attraction-search-interface.yaml",
-            "https://agent-search.ai/api_files/hotel-search-interface.yaml"
-        ],
-        "crawled_documents": 3
-    }
+    # default_notification = {
+    #     "id": "guide_1747204409",
+    #     "type": "出行指南",
+    #     "title": "杭之逸酒店(杭州未来科技城海创园店)出行指南",
+    #     "content": "# 欢迎致辞  \n欢迎您入住杭之逸酒店（杭州未来科技城海创园店）！我们位于仓前街道向往路1008号（乐富海邦园），致力于为您提供温馨、便捷的入住体验。希望本指南能帮助您高效规划在杭一晚的小憩之旅。\n\n## 1. 酒店设施与服务介绍  \n### 1.1 客房设施  \n- 优选大床房：1.8m舒适大床、智能恒温空调  \n- 免费高速Wi-Fi覆盖全楼层  \n- 42寸液晶电视、独立浴缸、24小时热水  \n- mini吧（收费）、电子保险箱、熨斗/熨衣板  \n\n### 1.2 酒店公共设施  \n- 自助早餐厅（07:00–10:00）  \n- 健身房（06:00–22:00）  \n- 商务中心（打印、传真、复印）  \n- 免费停车场（需提前登记）  \n\n### 1.3 贴心服务  \n- 24小时前台、行李寄存  \n- 叫醒服务、洗衣/干洗（附加费）  \n- 接送机/火车站服务（需预约）  \n- 本地电话/票务/餐饮咨询  \n\n> **温馨提示**：请您在抵店前24小时内，提前联系前台预约接送及洗衣服务。\n\n---\n\n## 2. 交通选项  \n### 2.1 机场 → 酒店  \n- 出租车：约50 km，人民币180–220元，时长约50分钟  \n- 机场大巴+地铁：机场T1/T2→大巴至城站→地铁1号线（黄家埠站）转3号线（未来科技城站）→出租（2 km）\n\n### 2.2 火车站 → 酒店  \n- 杭州东站：出租车约15 km，人民币80–100元，时长约30分钟  \n- 地铁：东站乘地铁4号线至沈塘桥→转3号线至未来科技城站→出租（2 km）\n\n### 2.3 公共交通  \n- 地铁3号线：未来科技城站 → 出口步行约1 km  \n- 公交：345路、930路 → “向往路口”站  \n\n### 2.4 出租车／网约车  \n- 滴滴快车/顺风车：起步价约11元，最终费用视里程浮动  \n- 路边可拦车，夜间高峰易打车困难，建议提前预约\n\n> **贴士**：未来科技城地铁3号线运营至23:00，请留意末班车时间。\n\n---\n\n## 3. 周边景点和地标  \n### 3.1 步行可达（≤2 km）  \n- 乐富海邦园购物小区：特色咖啡、手作甜品  \n- 向往路中央绿地公园：休闲散步／晨跑好去处  \n- 社区周边小店：茶饮、简餐  \n\n### 3.2 短途旅行（车程≤30 min）  \n- 钱塘江湿地公园（约5 km）：河畔栈道、观鸟胜地  \n- 浙江未来科技城科创中心（约3 km）：现代建筑群，周边咖啡馆聚集  \n- 杭州国家动漫产业园（约8 km）：主题展览、创意市集  \n\n---\n\n## 4. 当地美食推荐  \n### 4.1 著名当地菜  \n- 西湖醋鱼：色泽红亮、酸甜开胃  \n- 东坡肉：肥而不腻、入口即化  \n- 龙井虾仁：清新茶香与鲜虾完美融合  \n\n### 4.2 热门餐厅  \n- 知味观未来科技城店（中式杭帮菜）  \n- 海底捞（乐富海邦园店）  \n- 老娘舅（向往路店）– 家常杭帮小吃  \n- 星巴克、麦当劳、肯德基（商区连锁）  \n\n> **美食TIP**：晚餐高峰期常需等位，建议18:00前或21:00后就餐。\n\n---\n\n## 5. 购物区域  \n### 5.1 商场  \n- 乐富海邦园商业街（步行1 min）– 日用、快餐、咖啡  \n- 林安大悦城（约6 km）– 品牌集合、影院、美食广场  \n- 坂田百货（约5 km）– 特色小店、潮流服饰  \n\n### 5.2 市场及精品店  \n- 向往路早餐夜市（每日06:00–09:00，18:00–21:00）  \n- 科创园文创市集（周末特定时间）  \n\n---\n\n## 6. 实用信息  \n### 6.1 紧急联系方式  \n- 酒店前台：+86-571-xxxxxxxx（按“0”转接）  \n- 火警／救护：119／120／110  \n- 医院：杭州未来科技城医院 +86-571-xxxxxxxx  \n\n### 6.2 实用短语  \n- “请问洗衣要多久？” → qǐng wèn xǐ yī yào duō jiǔ?  \n- “附近有推荐的餐厅吗？” → fù jìn yǒu tuī jiàn de cān tīng ma?  \n- “我需要叫出租车。” → wǒ xū yào jiào chū zū chē.  \n\n---\n\n## 7. 基于住宿时长的行程建议  \n### 一晚快速体验  \n- 15:00 抵店，办理入住 → 客房休息  \n- 17:30 步行至社区绿地散步，拍照打卡  \n- 18:30 于酒店周边餐厅品尝杭帮晚餐  \n- 20:00 返回房间，可至商务中心打印行程资料或放松观影  \n- 06:30 清晨至向往路公园晨跑／散步  \n- 07:30 回酒店享用自助早餐  \n- 09:00 办理退房，前往下一个目的地或返程  \n\n> **行程TIP**：因仅一晚住宿，请保持充足睡眠，第二天精力充沛，游览更尽兴。\n\n---\n\n如需更多帮助或定制行程，请随时联系酒店前台。祝您在杭州未来科技城的入住愉快！",
+    #     "hotelId": 10042200,
+    #     "timestamp": current_time,
+    #     "read": False,
+    #     "visited_urls": [
+    #         "https://agent-search.ai/ad.json",
+    #         "https://agent-search.ai/api_files/tourist-attraction-search-interface.yaml",
+    #         "https://agent-search.ai/api_files/hotel-search-interface.yaml"
+    #     ],
+    #     "crawled_documents": 3
+    # }
     
     # # 使用订单通知作为测试
     # order_notification = {
@@ -466,7 +466,7 @@ async def get_notifications():
     # }
     
     # 在测试环境返回默认通知
-    mock_notifications = [default_notification]
-    logging.info("Returning mock notifications for testing")
+    # mock_notifications = [default_notification]
+    # logging.info("Returning mock notifications for testing")
     
-    return {"has_notification": True, "notifications": mock_notifications}
+    # return {"has_notification": True, "notifications": mock_notifications}

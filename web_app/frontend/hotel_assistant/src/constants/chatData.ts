@@ -16,18 +16,23 @@ import React from 'react';
 export const DEFAULT_CONVERSATIONS_ITEMS = [
   {
     key: 'default-0',
-    label: 'What is ANP?',
+    label: '杭州武林门附近酒店查询',
     group: '今天',
   },
   {
     key: 'default-1',
-    label: 'How to quickly install and import components?',
-    group: '今天',
+    label: '杭州西溪湿地附近酒店查询',
+    group: '昨天',
   },
   {
     key: 'default-2',
-    label: 'New AGI Hybrid Interface',
+    label: '杭州未来科技周边酒店预订',
     group: '昨天',
+  },
+  {
+    key: 'default-3',
+    label: '上海外滩附近有酒店查询',
+    group: '上周',
   },
 ];
 

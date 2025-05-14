@@ -114,7 +114,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ onNotificationCountChange }) => {
         ) : (
           <Welcome
             variant="borderless"
-            icon="https://avatars.githubusercontent.com/u/199323856?s=48&v=4"
+            icon={<img src="/anp.png" alt="logo" style={{ width: 48, height: 48 }} />}
             title="您好，我是您的酒店助手"
             description="我是一个基于ANP协议的酒店助手，可以为您提供酒店信息、预订、支付等服务。"
           />
