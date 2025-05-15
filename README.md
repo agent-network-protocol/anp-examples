@@ -91,6 +91,12 @@ ANP网络探索工具是一个基于Agent Network Protocol (ANP)的应用程序�
 1. 查看结果和网络爬取过程
 ![查询天气案例](images/anp-examples-search-result.png)
 
+##### 方法三: 使用 Docker 运行
+> 通过`docker compose`命令运行Docker容器，确保你已经安装了Docker和Docker Compose。
+```bash
+docker compose up -d
+```
+
 ### 如何开发（面向开发者）
 
 1. 克隆仓库：
