@@ -1,0 +1,15 @@
+# filepath: docker-compose.yml
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${PORT}:${PORT}" # 如果 port 需要调整的话,可以设置port 这个环境变量
+    env_file:
+      - .env 
+    volumes:
+      - .:/app # 挂载当前目录到容器的/app目录
+    command: python anp_examples_backend.py # Ensures the backend script is run
