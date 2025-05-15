@@ -7,7 +7,8 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "${PORT}:${PORT}" # 如果 port 需要调整的话,可以设置port 这个环境变量
+      - "5005:5005" # 映射容器的5005端口到主机的5005端口
+      # - "${PORT}:${PORT}" # 如果 port 需要调整的话,可以设置port 这个环境变量
     env_file:
       - .env 
     volumes:
