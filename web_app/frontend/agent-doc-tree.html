@@ -15,6 +15,41 @@
             background-color: #fafafa;
             border-radius: 8px;
         }
+        
+        /* 确保文档预览在暗黑模式下有正确的颜色 */
+        .dark .document-preview {
+            color: #FFFFFF;
+            background-color: #1E293B;
+            border: 1px solid #4B5563;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* 增强文档预览区域内容的可见性 */
+        .dark .document-preview p,
+        .dark .document-preview span,
+        .dark .document-preview div,
+        .dark .document-preview pre,
+        .dark .document-preview code,
+        .dark .document-preview ul,
+        .dark .document-preview ol,
+        .dark .document-preview li,
+        .dark .document-preview table {
+            color: #FFFFFF !important;
+            opacity: 1;
+        }
+        
+        /* 增强文档内容弹窗中的文本可见性 */
+        .dark #doc-content-dialog pre {
+            color: #FFFFFF !important;
+            background-color: #1A202C !important;
+            border: 1px solid #4B5563;
+        }
+        
+        /* 确保JSON内容在暗黑模式下清晰可见 */
+        .dark #doc-content-dialog pre * {
+            color: #F3F4F6 !important;
+            opacity: 1;
+        }
 
         .node-tooltip {
             position: absolute;
@@ -40,12 +75,91 @@
         .dark #network-container {
             background-color: #1E293B;
             border-color: #374151;
+            color: #E5E7EB;
         }
         
         .dark .node-tooltip {
             background-color: #1E293B;
+            color: #FFFFFF;
+            border-color: #4B5563;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* 增强节点提示框内容的可见性 */
+        .dark .node-tooltip p,
+        .dark .node-tooltip span,
+        .dark .node-tooltip div,
+        .dark .node-tooltip pre,
+        .dark .node-tooltip code {
+            color: #FFFFFF !important;
+            opacity: 1;
+        }
+        
+        /* 确保暗黑模式下文本颜色可见 */
+        .dark .text-gray-600,
+        .dark .text-gray-700 {
+            color: #F3F4F6 !important; /* 提高亮度 */
+        }
+        
+        /* 增强暗黑模式下所有文本的可见性 */
+        .dark .text-gray-500 {
+            color: #D1D5DB !important; /* 提高亮度 */
+        }
+        
+        .dark p, .dark span, .dark label, .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
             color: #F9FAFB;
-            border-color: #374151;
+        }
+        
+        /* 增强暗黑模式下placeholder文本的可见性 */
+        .dark input::placeholder,
+        .dark textarea::placeholder {
+            color: #D1D5DB !important;
+            opacity: 1;
+        }
+        
+        /* 确保暗黑模式下的链接和按钮文本清晰可见 */
+        .dark a, .dark button {
+            color: #F9FAFB;
+        }
+        
+        /* 增强暗黑模式下的文本输入框可见性 */
+        .dark input, .dark textarea, .dark select {
+            color: #FFFFFF;
+            background-color: #374151;
+            border-color: #4B5563;
+        }
+        
+        /* 增强暗黑模式下输入框聚焦时的样式 */
+        .dark input:focus, .dark textarea:focus, .dark select:focus {
+            border-color: #6366F1;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+        }
+        
+        /* 确保暗黑模式下节点文本清晰可见 */
+        .dark .vis-network .vis-node {
+            color: #F9FAFB !important;
+        }
+        
+        /* 增强暗黑模式下标题和文本的可见性 */
+        .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+            color: #FFFFFF;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* 增强暗黑模式下对话框标题的可见性 */
+        .dark #doc-content-dialog h2,
+        .dark #error-dialog h3 {
+            color: #FFFFFF;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+            font-weight: 800;
+            letter-spacing: 0.75px;
+            background-color: rgba(30, 41, 59, 0.95);
+            border: 1px solid #6366F1;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin: -4px 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
         }
         
         /* 语言切换样式 */
@@ -197,6 +311,25 @@
             }
         };
 
+        // 关闭文档时清除loading状态
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+        
+        // 处理加载错误或关闭
+        window.addEventListener('beforeunload', function() {
+            hideLoading();
+        });
+        
+        // 确保在页面加载完成后，如果没有成功获取数据，也要隐藏loading
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                if (nodes.length === 0) {
+                    hideLoading();
+                }
+            }, 5000); // 5秒后如果还没有数据则隐藏loading
+        });
+        
         // 显示提示
         function showTooltip(text, x, y) {
             let tooltip = document.querySelector('.node-tooltip');
@@ -299,7 +432,8 @@
                 try {
                     // 创建文档内容弹窗
                     showDocumentDialog(url, docContent);
-                    
+                                 // 移除加载中弹窗
+                     closeLoadingDialog();
                 } catch (error) {
                     console.error('获取文档内容失败:', error);
                     
@@ -333,18 +467,18 @@
             
             dialog.innerHTML = `
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden w-4/5 h-4/5 max-w-5xl flex flex-col">
-                    <div class="flex justify-between items-center p-4 border-b dark:border-gray-700">
-                        <h2 class="text-xl font-bold truncate max-w-md">
+                    <div class="flex justify-between items-center p-4 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                        <h2 class="text-xl font-bold truncate max-w-md text-gray-800 dark:text-white px-3 py-2 rounded-md bg-white dark:bg-indigo-900 border dark:border-indigo-600 shadow-sm">
                             ${filename}
                         </h2>
-                        <button id="close-content-dialog" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                        <button id="close-content-dialog" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
                         </button>
                     </div>
                     <div class="flex-grow overflow-auto p-4">
-                        <pre class="text-xs overflow-auto p-4 bg-gray-100 dark:bg-gray-900 rounded">${JSON.stringify(content, null, 2)}</pre>
+                        <pre class="text-xs overflow-auto p-4 bg-gray-100 dark:bg-gray-900 rounded border dark:border-gray-700 shadow-inner">${JSON.stringify(content, null, 2)}</pre>
                     </div>
                 </div>
             `;
@@ -389,16 +523,16 @@
             dialog.id = 'error-dialog';
             
             dialog.innerHTML = `
-                <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md">
-                    <div class="flex items-center mb-4">
+                <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md shadow-xl border dark:border-gray-700">
+                    <div class="flex items-center mb-4 p-2 bg-gray-50 dark:bg-gray-900 rounded-md border dark:border-gray-700">
                         <svg class="w-6 h-6 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        <h3 class="text-lg font-bold text-red-600 dark:text-red-400">${currentLang === 'zh' ? '错误' : 'Error'}</h3>
+                        <h3 class="text-lg font-bold text-red-600 dark:text-red-400 px-3 py-1 rounded-md bg-white dark:bg-red-900 border dark:border-red-700 shadow-sm">${currentLang === 'zh' ? '错误' : 'Error'}</h3>
                     </div>
-                    <p class="text-gray-700 dark:text-gray-300 mb-4">${message}</p>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4 p-3 bg-gray-50 dark:bg-gray-900 rounded-md">${message}</p>
                     <div class="text-right">
-                        <button id="close-error-dialog" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                        <button id="close-error-dialog" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 shadow-md border border-indigo-700">
                             ${currentLang === 'zh' ? '关闭' : 'Close'}
                         </button>
                     </div>
@@ -622,4 +756,4 @@
         });
     </script>
 </body>
-</html> 
+</html>

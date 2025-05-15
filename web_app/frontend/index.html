@@ -20,9 +20,9 @@
       --secondary-color: #10B981;
       --accent-color: #EC4899;
       --bg-color-light: #F9FAFB;
-      --bg-color-dark: #111827;
+      --bg-color-dark: #0F172A;
       --text-color-light: #1F2937;
-      --text-color-dark: #F9FAFB;
+      --text-color-dark: #FFFFFF;
     }
     
     body {
@@ -33,6 +33,47 @@
     .dark {
       background-color: var(--bg-color-dark);
       color: var(--text-color-dark);
+    }
+    
+    /* 确保暗黑模式下所有元素都有正确的背景色 */
+    .dark body,
+    .dark nav,
+    .dark footer {
+      background-color: var(--bg-color-dark);
+    }
+    
+    /* 修复暗黑模式下的容器背景色 */
+    .dark main {
+      background-color: var(--bg-color-dark) !important;
+    }
+    
+    /* 修复暗黑模式下的卡片背景色 */
+    .dark .bg-white {
+      background-color: #1E293B !important;
+      color: #F9FAFB;
+    }
+    
+    /* 修复暗黑模式下的图标颜色 */
+    .dark .fas,
+    .dark .fa,
+    .dark .far,
+    .dark .fab {
+      color: #F3F4F6;
+    }
+    
+    /* 修复暗黑模式下的链接颜色 */
+    .dark a {
+      color: #93C5FD;
+    }
+    
+    .dark a:hover {
+      color: #BFDBFE;
+      text-decoration: underline;
+    }
+    
+    /* 修复暗黑模式下的边栏背景色 */
+    .dark .sidebar {
+      background-color: #1E293B !important;
     }
     
     .light {
@@ -171,6 +212,8 @@
     .dark pre {
       background-color: #1E293B;
       border: 1px solid #374151;
+      color: #F9FAFB;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
     
     .light pre {
@@ -188,6 +231,34 @@
         width: 100% !important;
       }
     }
+    
+    /* 增强暗黑模式下标签和文本的可见性 */
+    .dark label {
+      color: #FFFFFF;
+      font-weight: 600;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+    
+    .dark h2, .dark h3, .dark h4 {
+      color: #FFFFFF;
+      font-weight: 600;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+    
+    .dark p {
+      color: #FFFFFF;
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+    }
+    
+    .dark .prose {
+      color: #FFFFFF;
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+    }
+    
+    .dark .url-item {
+      border-color: #6B7280;
+      border-width: 2px;
+    }
 
     /* 语言切换 */
     .lang-zh, .lang-en {
@@ -200,6 +271,85 @@
       display: inline-block;
     }
     
+    /* 增强暗黑模式下的表单元素可见性 */
+    .dark input, .dark textarea, .dark select {
+      color: #FFFFFF;
+      background-color: #1E293B;
+      border-color: #818CF8;
+      border-width: 2px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* 修复暗黑模式下的占位符文本颜色 */
+    .dark input::placeholder, .dark textarea::placeholder {
+      color: #9CA3AF;
+    }
+    
+    /* 增强暗黑模式下输入框聚焦时的样式 */
+    .dark input:focus, .dark textarea:focus, .dark select:focus {
+      border-color: #6366F1;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.7);
+    }
+    
+    /* 增强暗黑模式下文本可见性 */
+    .dark .text-gray-500,
+    .dark .text-gray-600,
+    .dark .text-gray-400,
+    .dark .text-gray-300 {
+      color: #F3F4F6 !important;
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* 确保暗黑模式下所有文本都有足够的对比度 */
+    .dark p, 
+    .dark span, 
+    .dark label, 
+    .dark h1, 
+    .dark h2, 
+    .dark h3, 
+    .dark h4, 
+    .dark h5, 
+    .dark h6 {
+      color: #F9FAFB;
+    }
+    
+    /* 增强暗黑模式下按钮可见性 */
+    .dark button {
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #FFFFFF;
+    }
+    
+    .dark #lang-toggle, .dark #theme-toggle {
+      color: #FFFFFF;
+      background-color: rgba(55, 65, 81, 0.5);
+    }
+    
+    /* 增强暗黑模式下按钮悬停效果 */
+    .dark button:hover {
+      background-color: rgba(55, 65, 81, 0.7);
+    }
+    
+    /* 增强暗黑模式下URL项的可见性 */
+    .dark .url-item {
+      background-color: rgba(30, 41, 59, 0.9);
+      border: 2px solid rgba(129, 140, 248, 0.5);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      color: #F9FAFB;
+    }
+    
+    .dark .url-item:hover {
+      background-color: rgba(30, 41, 59, 1);
+      border-color: rgba(129, 140, 248, 0.8);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+    
+    .dark .url-item.bg-indigo-50 {
+      background-color: rgba(79, 70, 229, 0.3) !important;
+      border-color: rgba(129, 140, 248, 1) !important;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+    }
+    
     /* 进度条样式 */
     .progress-container {
       position: fixed;
@@ -210,6 +360,11 @@
       background-color: #f0f0f0;
       border-radius: 0;
       z-index: 1000;
+    }
+    
+    /* 暗黑模式下的进度条背景 */
+    .dark .progress-container {
+      background-color: #1E293B;
     }
     
     .progress-bar {
@@ -232,13 +387,19 @@
       font-size: 12px;
       transform: translateX(50%);
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      display: none; /* 初始状态隐藏百分比显示 */
+    }
+    
+    /* 进度条容器初始隐藏 */
+    .progress-container {
+      display: none;
     }
   </style>
 </head>
 
 <body class="min-h-screen">
   <!-- 顶部导航栏 -->
-  <nav class="py-4 px-6 flex justify-between items-center border-b dark:border-gray-700 border-gray-200">
+  <nav class="py-4 px-6 flex justify-between items-center border-b dark:border-gray-700 border-gray-200 dark:bg-gray-900">
     <div class="flex items-center space-x-2">
       <i class="fas fa-robot text-3xl text-indigo-600"></i>
       <h1 class="text-2xl font-bold"><span class="lang-zh">ANP网络探索工具</span><span class="lang-en">ANP Network Explorer</span></h1>
@@ -267,16 +428,16 @@
   </div>
 
   <!-- 主要内容区 -->
-  <main class="container mx-auto py-8 px-6">
+  <main class="container mx-auto py-8 px-6 dark:bg-gray-900 dark:bg-opacity-95">
     <!-- 输入区域 -->
     <div class="mb-8 max-w-4xl mx-auto">
-      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border dark:border-gray-600 dark:border-opacity-70 dark:shadow-lg">
         <div class="mb-4">
           <label for="query" class="block text-lg font-medium mb-2">
             <span class="lang-zh">您的问题</span>
             <span class="lang-en">Your Question</span>
           </label>
-          <textarea id="query" rows="3" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" placeholder="例如：帮我查看最近几天杭州的天气 / e.g., Help me check the weather in Hangzhou for the past few days"></textarea>
+          <textarea id="query" rows="3" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-300" placeholder="例如：帮我查看最近几天杭州的天气 / e.g., Help me check the weather in Hangzhou for the past few days"></textarea>
         </div>
         
         <div class="mb-4">
@@ -284,16 +445,16 @@
             <span class="lang-zh">智能体 URL（选填）</span>
             <span class="lang-en">Agent URL (Optional)</span>
           </label>
-          <input type="text" id="agent-url" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" placeholder="https://agent-weather.xyz/ad.json">
+          <input type="text" id="agent-url" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-300" placeholder="https://agent-weather.xyz/ad.json">
         </div>
         
         <div class="text-right flex justify-end space-x-3">
-          <button id="analyze-btn" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium flex items-center justify-center">
+          <button id="analyze-btn" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-md font-medium flex items-center justify-center shadow-lg hover:shadow-xl dark:bg-green-500 dark:hover:bg-green-600 dark:shadow-green-700/30 dark:border-green-400 dark:text-white dark:font-bold transition-all">
             <span class="lang-zh">解析文档结构</span>
             <span class="lang-en">Analyze Structure</span>
             <i class="fas fa-project-diagram ml-2"></i>
           </button>
-          <button id="submit-btn" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md font-medium flex items-center justify-center">
+          <button id="submit-btn" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md font-medium flex items-center justify-center shadow-lg hover:shadow-xl dark:bg-indigo-500 dark:hover:bg-indigo-600 dark:shadow-indigo-700/30 dark:border-indigo-400 dark:text-white dark:font-bold transition-all">
             <span class="lang-zh">提交问题</span>
             <span class="lang-en">Submit</span>
             <i class="fas fa-paper-plane ml-2"></i>
@@ -305,7 +466,7 @@
     <!-- 响应区域 -->
     <div class="response-container flex space-x-0 md:space-x-6 space-y-6 md:space-y-0">
       <!-- 响应内容 -->
-      <div class="w-full md:w-3/5 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 min-h-[300px] flex-grow">
+      <div class="w-full md:w-3/5 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 min-h-[300px] flex-grow border dark:border-gray-600 dark:border-opacity-80 dark:shadow-xl">
         <div id="response-loader" class="hidden flex justify-center items-center h-full">
           <div class="loading">
             <div></div>
@@ -350,7 +511,7 @@
       </div>
       
       <!-- 右侧边栏 -->
-      <div class="sidebar w-full md:w-2/5 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex flex-col h-[calc(100vh-400px)]">
+      <div class="sidebar w-full md:w-2/5 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex flex-col h-[calc(100vh-400px)] border dark:border-gray-600 dark:border-opacity-80 dark:shadow-xl">
         <h3 class="text-lg font-bold mb-4 flex items-center">
           <i class="fas fa-link mr-2 text-indigo-500"></i>
           <span class="lang-zh">已访问的 URL</span>
@@ -359,7 +520,7 @@
         </h3>
         
         <div id="urls-container" class="flex-grow overflow-y-auto mb-4">
-          <p class="text-gray-500 dark:text-gray-400 italic">
+          <p class="text-gray-500 dark:text-gray-300 italic">
             <span class="lang-zh">尚未访问任何 URL</span>
             <span class="lang-en">No URLs visited yet</span>
           </p>
@@ -543,7 +704,9 @@
         
         // 重置并显示进度条
         progressBar.style.width = '0%';
-        progressBarContainer.classList.remove('hidden');
+        progressBarContainer.style.display = 'block';
+        // 显示百分比指示器
+        progressBar.querySelector('.progress-percentage').style.display = 'block';
         
         // 设置进度条动画 - 更加智能的进度估计
         let progress = 0;
@@ -621,7 +784,8 @@
         
         // 短暂延迟后隐藏进度条和加载状态
         setTimeout(() => {
-          progressBarContainer.classList.add('hidden');
+          progressBarContainer.style.display = 'none';
+          progressBar.querySelector('.progress-percentage').style.display = 'none';
           document.getElementById('response-loader').classList.add('hidden');
           
           // 显示响应
