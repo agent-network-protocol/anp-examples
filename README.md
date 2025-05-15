@@ -96,6 +96,7 @@ ANP网络探索工具是一个基于Agent Network Protocol (ANP)的应用程序�
 ```bash
 docker compose up -d
 ```
+然后打开浏览器访问：`http://localhost:5005`
 
 ### 如何开发（面向开发者）
 
@@ -209,6 +210,14 @@ By following these steps, you can run a web application locally.
 
 6. view results and the network crawling process
 ![Weather Case Study](images/anp-examples-search-result.png)
+
+##### Mode C: Run using Docker
+> Run Docker containers using the `docker compose` command. Make sure you have Docker and Docker Compose installed.
+```bash
+docker compose up -d
+```
+Then open the browser and visit: `http://localhost:5005`
+
 
 ### How to Develop (for Developers)
 
