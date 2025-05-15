@@ -10,7 +10,7 @@ from anp_examples.utils.log_base import set_log_color_level
 from anp_examples.anp_tool import ANPTool  # Import ANPTool
 from openai import AsyncOpenAI,OpenAI
 from config import validate_config, DASHSCOPE_API_KEY, DASHSCOPE_BASE_URL, DASHSCOPE_MODEL_NAME, OPENAI_API_KEY, \
-    OPENAI_BASE_URL
+    OPENAI_BASE_URL, OPENAI_MODEL
 
 # Get the absolute path to the root directory
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -186,11 +186,13 @@ async def simple_crawl(
     model_provider = os.getenv("MODEL_PROVIDER", "dashscope").lower()
 
     if model_provider == "dashscope":
+        model_name = DASHSCOPE_MODEL_NAME
         client = AsyncOpenAI(
             api_key=DASHSCOPE_API_KEY,
             base_url=DASHSCOPE_BASE_URL
         )
     elif model_provider == "openai":
+        model_name = OPENAI_MODEL
         client = AsyncOpenAI(
             api_key=OPENAI_API_KEY,
             base_url=OPENAI_BASE_URL
@@ -252,7 +254,7 @@ async def simple_crawl(
 
         # Get model response
         completion = await client.chat.completions.create(
-            model = DASHSCOPE_MODEL_NAME,
+            model = model_name,
             messages = messages,
             tools = get_available_tools(anp_tool),
             tool_choice = "auto",
