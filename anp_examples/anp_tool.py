@@ -244,3 +244,17 @@ class ANPTool:
         result["url"] = str(url)
 
         return result
+
+    @property
+    def tools(self):
+        """Get the list of available tools"""
+        return [
+            {
+                "type": "function",
+                "function": {
+                    "name": "anp_tool",
+                    "description": self.description,
+                    "parameters": self.parameters,
+                },
+            }
+        ]
