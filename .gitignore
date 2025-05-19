@@ -8,6 +8,9 @@ web_app/frontend/node_modules
 # C extensions
 *.so
 
+web_app/frontend/hotel_assistant/node_modules/*
+web_app/frontend/node_modules/*
+
 # Distribution / packaging
 .Python
 build/
