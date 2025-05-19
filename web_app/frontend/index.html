@@ -273,18 +273,18 @@
       <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
         <div class="mb-4">
           <label for="query" class="block text-lg font-medium mb-2">
-            <span class="lang-zh">您的问题</span>
-            <span class="lang-en">Your Question</span>
+            <span class="lang-zh font-bold text-gray-900 dark:text-gray-100">您的问题</span>
+            <span class="lang-en font-bold text-gray-900 dark:text-gray-100">Your Question</span>
           </label>
-          <textarea id="query" rows="3" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" placeholder="例如：帮我查看最近几天杭州的天气 / e.g., Help me check the weather in Hangzhou for the past few days"></textarea>
+          <textarea id="query" rows="3" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 text-gray-900 dark:text-gray-100 font-medium border-gray-400 dark:border-gray-500" placeholder="例如：帮我查看最近几天杭州的天气 / e.g., Help me check the weather in Hangzhou for the past few days"></textarea>
         </div>
         
         <div class="mb-4">
           <label for="agent-url" class="block text-lg font-medium mb-2">
-            <span class="lang-zh">智能体 URL（选填）</span>
-            <span class="lang-en">Agent URL (Optional)</span>
+            <span class="lang-zh font-bold text-gray-900 dark:text-gray-100">智能体 URL（选填）</span>
+            <span class="lang-en font-bold text-gray-900 dark:text-gray-100">Agent URL (Optional)</span>
           </label>
-          <input type="text" id="agent-url" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 text-gray-900 dark:text-white" value="">
+          <input type="text" id="agent-url" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 text-gray-900 dark:text-gray-100 font-medium border-gray-400 dark:border-gray-500" placeholder="https://agent-weather.xyz/ad.json">
         </div>
         
         <div class="text-right flex justify-end space-x-3">
@@ -321,28 +321,28 @@
         
         <div id="response-content" class="prose dark:prose-invert max-w-none">
           <h2 class="text-xl font-bold mb-4">
-            <span class="lang-zh">欢迎使用ANP网络探索工具</span>
-            <span class="lang-en">Welcome to ANP Network Explorer</span>
+            <span class="lang-zh font-bold text-gray-900 dark:text-gray-100">欢迎使用ANP网络探索工具</span>
+            <span class="lang-en font-bold text-gray-900 dark:text-gray-100">Welcome to ANP Network Explorer</span>
           </h2>
           <div class="lang-zh">
-            <p class="first-letter-drop">
+            <p class="first-letter-drop text-gray-900 dark:text-gray-100">
               这是一个基于 Agent Network Protocol (ANP) 的网络探索工具。只需输入您的智能体描述文件URL，即可利用这个工具访问您的智能体并与它进行交互。通过自然语言提问，系统将通过ANP协议为您建立连接。
             </p>
-            <p>
+            <p class="text-gray-900 dark:text-gray-100">
               在输入框中输入您的问题，并提供智能体URL，点击"提交问题"按钮即可开始探索。
             </p>
-            <p>
+            <p class="text-gray-900 dark:text-gray-100">
               右侧边栏将实时显示系统访问的URL和爬取的数据，让您了解与智能体交互的整个过程。
             </p>
           </div>
           <div class="lang-en">
-            <p class="first-letter-drop">
+            <p class="first-letter-drop text-gray-900 dark:text-gray-100">
               This is a network exploration tool based on Agent Network Protocol (ANP). Simply enter your agent description file URL, and you can use this tool to access your agent and interact with it. By asking questions in natural language, the system will establish a connection for you through the ANP protocol.
             </p>
-            <p>
+            <p class="text-gray-900 dark:text-gray-100">
               Enter your question in the input box, provide the agent URL, and click the "Submit" button to start exploring.
             </p>
-            <p>
+            <p class="text-gray-900 dark:text-gray-100">
               The sidebar on the right will display in real-time the URLs accessed by the system and the data crawled, allowing you to understand the entire process of interacting with the agent.
             </p>
           </div>
@@ -353,15 +353,15 @@
       <div class="sidebar w-full md:w-2/5 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex flex-col h-[calc(100vh-400px)]">
         <h3 class="text-lg font-bold mb-4 flex items-center">
           <i class="fas fa-link mr-2 text-indigo-500"></i>
-          <span class="lang-zh">已访问的 URL</span>
-          <span class="lang-en">Visited URLs</span>
+          <span class="lang-zh text-gray-900  dark:text-gray-100">已访问的 URL</span>
+          <span class="lang-en text-gray-900  dark:text-gray-100">Visited URLs</span>
           <span id="url-count" class="ml-2 px-2 py-1 bg-indigo-100 dark:bg-indigo-900 rounded-full text-xs font-medium">0</span>
         </h3>
         
         <div id="urls-container" class="flex-grow overflow-y-auto mb-4">
           <p class="text-gray-500 dark:text-gray-400 italic">
-            <span class="lang-zh">尚未访问任何 URL</span>
-            <span class="lang-en">No URLs visited yet</span>
+            <span class="lang-zh dark:text-gray-100">尚未访问任何 URL</span>
+            <span class="lang-en dark:text-gray-100">No URLs visited yet</span>
           </p>
         </div>
         
@@ -479,7 +479,7 @@
           <div class="flex items-start">
             <span class="font-mono text-xs bg-gray-200 dark:bg-gray-700 rounded-full w-5 h-5 flex items-center justify-center mr-2 flex-shrink-0">${index + 1}</span>
             <div>
-              <p class="text-sm font-medium break-all">${url}</p>
+              <p class="text-sm font-medium break-all text-gray-900">${url}</p>
               <p class="text-xs text-gray-500">${docsMap[url]?.method || 'GET'}</p>
             </div>
           </div>
@@ -636,7 +636,7 @@
               </div>
             `;
           } else {
-            responseContent.innerHTML = `<div class="markdown-body">${marked.parse(response.content)}</div>`;
+            responseContent.innerHTML = `<div class="markdown-body text-gray-900 dark:text-gray-100 font-medium">${marked.parse(response.content)}</div>`;
           }
           
           responseContent.classList.remove('hidden');
