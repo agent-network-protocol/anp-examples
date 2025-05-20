@@ -6,11 +6,12 @@ import asyncio
 from pathlib import Path
 from openai import AsyncAzureOpenAI
 from dotenv import load_dotenv
+
+from anp_examples.utils.json_utils import robust_json_parse
 from anp_examples.utils.log_base import set_log_color_level
 from anp_examples.anp_tool import ANPTool  # Import ANPTool
-from openai import AsyncOpenAI,OpenAI
-from config import validate_config, DASHSCOPE_API_KEY, DASHSCOPE_BASE_URL, DASHSCOPE_MODEL_NAME, OPENAI_API_KEY, \
-    OPENAI_BASE_URL
+from openai import AsyncOpenAI, OpenAI
+from config import validate_config, OPENAI_API_KEY, OPENAI_BASE_URL, OPENAI_MODEL
 
 # Get the absolute path to the root directory
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -91,15 +92,15 @@ def get_available_tools(anp_tool_instance):
 
 
 async def handle_tool_call(
-    tool_call: Any,
-    messages: List[Dict],
-    anp_tool: ANPTool,
-    crawled_documents: List[Dict],
-    visited_urls: set,
+        tool_call: Any,
+        messages: List[Dict],
+        anp_tool: ANPTool,
+        crawled_documents: List[Dict],
+        visited_urls: set,
 ) -> None:
     """Handle tool call"""
     function_name = tool_call.function.name
-    function_args = json.loads(tool_call.function.arguments)
+    function_args = robust_json_parse(tool_call.function.arguments)
 
     if function_name == "anp_tool":
         url = function_args.get("url")
@@ -144,12 +145,12 @@ async def handle_tool_call(
 
 
 async def simple_crawl(
-    user_input: str,
-    task_type: str = "general",
-    did_document_path: Optional[str] = None,
-    private_key_path: Optional[str] = None,
-    max_documents: int = 10,
-    initial_url: str = "https://agent-search.ai/ad.json",
+        user_input: str,
+        task_type: str = "general",
+        did_document_path: Optional[str] = None,
+        private_key_path: Optional[str] = None,
+        max_documents: int = 10,
+        initial_url: str = "https://agent-search.ai/ad.json",
 ) -> Dict[str, Any]:
     """
     Simplified crawling logic: let the model decide the crawling path autonomously
@@ -182,21 +183,11 @@ async def simple_crawl(
     #     azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
     # )
 
-    # 根据 MODEL_PROVIDER 环境变量选择不同的客户端
-    model_provider = os.getenv("MODEL_PROVIDER", "dashscope").lower()
-
-    if model_provider == "dashscope":
-        client = AsyncOpenAI(
-            api_key=DASHSCOPE_API_KEY,
-            base_url=DASHSCOPE_BASE_URL
-        )
-    elif model_provider == "openai":
-        client = AsyncOpenAI(
-            api_key=OPENAI_API_KEY,
-            base_url=OPENAI_BASE_URL
-        )
-    else:
-        raise ValueError(f"Unsupported MODEL_PROVIDER: {model_provider}")
+    # Initialize Async OpenAI client
+    client = AsyncOpenAI(
+        api_key=OPENAI_API_KEY,
+        base_url=OPENAI_BASE_URL
+    )
 
     # Get initial URL content
     try:
@@ -252,10 +243,11 @@ async def simple_crawl(
 
         # Get model response
         completion = await client.chat.completions.create(
-            model = DASHSCOPE_MODEL_NAME,
-            messages = messages,
-            tools = get_available_tools(anp_tool),
-            tool_choice = "auto",
+            model=OPENAI_MODEL,
+            messages=messages,
+            tools=anp_tool.tools,
+            tool_choice="auto",
+            temperature=0.0
         )
 
         response_message = completion.choices[0].message
@@ -288,8 +280,8 @@ async def simple_crawl(
 
         # If the maximum number of documents to crawl is reached, make a final summary
         if (
-            len(crawled_documents) >= max_documents
-            and current_iteration < max_documents
+                len(crawled_documents) >= max_documents
+                and current_iteration < max_documents
         ):
             logging.info(
                 f"Reached the maximum number of documents to crawl {max_documents}, making final summary"
