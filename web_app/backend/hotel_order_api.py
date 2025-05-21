@@ -10,6 +10,7 @@ from fastapi import APIRouter, HTTPException, BackgroundTasks
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any, Union
 import sys
+from pathlib import Path
 
 # Import hotel_crawler and travel_guide_generator functions
 sys_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
