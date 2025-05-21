@@ -171,10 +171,10 @@ async def simple_crawl(
 
     # Initialize Azure OpenAI client
     client = AsyncAzureOpenAI(
-        api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-        api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
-        azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-        azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
+        api_key=os.getenv("AZURE_OPENAI_API_KEY_2"),
+        api_version=os.getenv("AZURE_OPENAI_API_VERSION_2"),
+        azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT_2"),
+        azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT_2"),
     )
 
     # Get initial URL content
@@ -231,7 +231,7 @@ async def simple_crawl(
 
         # Get model response
         completion = await client.chat.completions.create(
-            model=os.getenv("AZURE_OPENAI_MODEL"),
+            model=os.getenv("AZURE_OPENAI_MODEL_2"),
             messages=messages,
             tools=get_available_tools(anp_tool),
             tool_choice="auto",
