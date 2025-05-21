@@ -5,6 +5,8 @@ import json
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any, Union
+import sys
+from pathlib import Path
 
 # Import hotel_crawler function
 sys_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
