@@ -233,6 +233,34 @@
       transform: translateX(50%);
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
+
+    /* 确保白色背景区域内的文字在任何模式下都保持深色 */
+    .bg-white {
+      color: var(--text-color-light) !important;
+    }
+    
+    .bg-white textarea,
+    .bg-white input[type="text"],
+    .bg-white label,
+    .bg-white p,
+    .bg-white h1,
+    .bg-white h2,
+    .bg-white h3,
+    .bg-white h4,
+    .bg-white h5,
+    .bg-white h6,
+    .bg-white span,
+    .bg-white div:not(.bg-yellow-100, .bg-red-100, .bg-indigo-100):not([class*="dark:"]) {
+      color: var(--text-color-light) !important;
+    }
+    
+    /* 确保URL计数器标签在深色模式下依然可见 */
+    .bg-indigo-100.dark\:bg-indigo-900 {
+      color: #1F2937 !important;
+    }
+    .dark .bg-indigo-100.dark\:bg-indigo-900 {
+      color: #F9FAFB !important;
+    }
   </style>
 </head>
 
@@ -418,7 +446,7 @@
       });
     });
     
-    // 暗黑模式切换
+    // 初始化主题设置
     document.addEventListener('DOMContentLoaded', () => {
       // 检查系统偏好
       const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -433,16 +461,33 @@
         document.documentElement.classList.remove('light');
       }
       
+      // 确保白色背景区域内的文字始终保持深色
+      setTimeout(() => {
+        document.querySelectorAll('.bg-white textarea, .bg-white input, .bg-white label, .bg-white p, .bg-white h1, .bg-white h2, .bg-white h3, .bg-white h4, .bg-white h5, .bg-white h6, .bg-white span').forEach(el => {
+          el.style.color = getComputedStyle(document.documentElement).getPropertyValue('--text-color-light');
+        });
+      }, 100);
+      
       // 添加主题切换事件
       document.getElementById('theme-toggle').addEventListener('click', () => {
         if (document.documentElement.classList.contains('dark')) {
           document.documentElement.classList.remove('dark');
           document.documentElement.classList.add('light');
           localStorage.setItem('theme', 'light');
+          
+          // 确保白色背景区域内的文字保持深色
+          document.querySelectorAll('.bg-white textarea, .bg-white input, .bg-white label, .bg-white p, .bg-white h1, .bg-white h2, .bg-white h3, .bg-white h4, .bg-white h5, .bg-white h6, .bg-white span').forEach(el => {
+            el.style.color = getComputedStyle(document.documentElement).getPropertyValue('--text-color-light');
+          });
         } else {
           document.documentElement.classList.remove('light');
           document.documentElement.classList.add('dark');
           localStorage.setItem('theme', 'dark');
+          
+          // 确保白色背景区域内的文字保持深色
+          document.querySelectorAll('.bg-white textarea, .bg-white input, .bg-white label, .bg-white p, .bg-white h1, .bg-white h2, .bg-white h3, .bg-white h4, .bg-white h5, .bg-white h6, .bg-white span').forEach(el => {
+            el.style.color = getComputedStyle(document.documentElement).getPropertyValue('--text-color-light');
+          });
         }
       });
     });
