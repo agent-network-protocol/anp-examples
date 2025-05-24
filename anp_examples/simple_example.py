@@ -5,6 +5,7 @@ import logging
 import asyncio
 from pathlib import Path
 from openai import AsyncAzureOpenAI
+from openai import AsyncOpenAI
 from dotenv import load_dotenv
 from anp_examples.utils.log_base import set_log_color_level
 from anp_examples.anp_tool import ANPTool  # Import ANPTool
@@ -68,7 +69,7 @@ Current date: {current_date}
 
 # Global variable
 initial_url = "https://agent-search.ai/ad.json"
-
+use_openrouter = True
 
 # Define available tools
 def get_available_tools(anp_tool_instance):
@@ -169,15 +170,18 @@ async def simple_crawl(
         did_document_path=did_document_path, private_key_path=private_key_path
     )
 
-    # Initialize Azure OpenAI client
-    client = AsyncAzureOpenAI(
-        api_key=os.getenv("AZURE_OPENAI_API_KEY_2"),
-        api_version=os.getenv("AZURE_OPENAI_API_VERSION_2"),
-        azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT_2"),
-        azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT_2"),
-    )
+    if (use_openrouter):
+        client = AsyncOpenAI(
+            base_url=os.getenv("OPENROUTER_BASE_URL"),
+            api_key=os.getenv("OPENROUTER_API_KEY"))
+    else:
+        client = AsyncAzureOpenAI(
+            api_key=os.getenv("AZURE_OPENAI_API_KEY_2"),
+            api_version=os.getenv("AZURE_OPENAI_API_VERSION_2"),
+            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT_2"),
+            azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT_2"))
 
-    # Get initial URL content
+    # Get initial URL content   
     try:
         initial_content = await anp_tool.execute(url=initial_url)
         visited_urls.add(initial_url)
@@ -229,9 +233,14 @@ async def simple_crawl(
                 }
             )
 
+        if (use_openrouter):
+            model = os.getenv("OPENROUTER_MODEL_CLAUDE_SONNET_4")
+        else:
+            model = ""
+        
         # Get model response
         completion = await client.chat.completions.create(
-            model=os.getenv("AZURE_OPENAI_MODEL_2"),
+            model=model,
             messages=messages,
             tools=get_available_tools(anp_tool),
             tool_choice="auto",
