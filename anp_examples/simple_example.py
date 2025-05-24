@@ -109,11 +109,17 @@ async def handle_tool_call(
             result = await anp_tool.execute(
                 url=url, method=method, headers=headers, params=params, body=body
             )
-            logging.info(f"ANPTool response [url: {url}]")
+
+            # 将url和params拼成字符串
+            url_params = url
+            if params:
+                url_params += "?" + "&".join([f"{k}={v}" for k, v in params.items()])
+
+            logging.info(f"ANPTool response [url: {url_params}]")
 
             # Record visited URLs and obtained content
-            visited_urls.add(url)
-            crawled_documents.append({"url": url, "method": method, "content": result})
+            visited_urls.add(url_params)
+            crawled_documents.append({"url": url_params, "method": method, "content": result})
 
             messages.append(
                 {
