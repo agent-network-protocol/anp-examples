@@ -10,7 +10,7 @@ from anp_examples.utils.log_base import set_log_color_level
 from anp_examples.anp_tool import ANPTool  # Import ANPTool
 from openai import AsyncOpenAI,OpenAI
 from config import validate_config, DASHSCOPE_API_KEY, DASHSCOPE_BASE_URL, DASHSCOPE_MODEL_NAME, OPENAI_API_KEY, \
-    OPENAI_BASE_URL
+    OPENAI_BASE_URL, OPENAI_MODEL
 
 # Get the absolute path to the root directory
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -190,11 +190,24 @@ async def simple_crawl(
             api_key=DASHSCOPE_API_KEY,
             base_url=DASHSCOPE_BASE_URL
         )
+        model_name = DASHSCOPE_MODEL_NAME
     elif model_provider == "openai":
-        client = AsyncOpenAI(
-            api_key=OPENAI_API_KEY,
-            base_url=OPENAI_BASE_URL
-        )
+        # 检测是否为Azure OpenAI并相应配置
+        if 'openai.azure.com' in OPENAI_BASE_URL.lower():
+            print("检测到Azure OpenAI配置，使用Azure兼容模式")
+            client = AsyncOpenAI(
+                api_key=OPENAI_API_KEY,
+                base_url=OPENAI_BASE_URL,
+                default_headers={"api-key": OPENAI_API_KEY},  # Azure特有的认证header
+                default_query={"api-version": "2024-02-01"},   # Azure必需的API版本
+            )
+        else:
+            print("检测到标准OpenAI配置")
+            client = AsyncOpenAI(
+                api_key=OPENAI_API_KEY,
+                base_url=OPENAI_BASE_URL
+            )
+        model_name = OPENAI_MODEL
     else:
         raise ValueError(f"Unsupported MODEL_PROVIDER: {model_provider}")
 
@@ -252,7 +265,7 @@ async def simple_crawl(
 
         # Get model response
         completion = await client.chat.completions.create(
-            model = DASHSCOPE_MODEL_NAME,
+            model = model_name,
             messages = messages,
             tools = get_available_tools(anp_tool),
             tool_choice = "auto",

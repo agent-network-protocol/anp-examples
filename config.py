@@ -14,6 +14,8 @@ from dotenv import load_dotenv
 #ROOT_DIR = Path(__file__).parent.parent.parent
 ROOT_DIR = Path(__file__).parent
 
+print('ROOT_DIR is ' + str(ROOT_DIR))
+
 # Load environment variables from root .env file
 load_dotenv(ROOT_DIR / '.env')
 
@@ -33,10 +35,13 @@ OPENAI_MODEL=os.getenv('OPENAI_MODEL')
 
 def validate_config():
     """Validate that at least one set of required environment variables is set"""
+
+    print('model_provider is ' + model_provider)
+
     if model_provider == "dashscope":
         required_vars = ["DASHSCOPE_API_KEY", "DASHSCOPE_BASE_URL", "DASHSCOPE_MODEL_NAME"]
     elif model_provider == "openai":
-        required_vars = ["OPENAI_API_KEY", "OPENAI_BASE_URL"]
+        required_vars = ["OPENAI_API_KEY", "OPENAI_BASE_URL", "OPENAI_MODEL"]
     else:
         raise ValueError(f"Unsupported MODEL_PROVIDER: {model_provider}")
 
