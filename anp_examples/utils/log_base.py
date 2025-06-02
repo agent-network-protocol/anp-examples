@@ -49,23 +49,33 @@ def get_project_name():
     return project_dir
 
 
-def setup_logging(level=logging.INFO, log_file=None, propagate=False):
+def setup_logging(level=logging.INFO, log_file=None, propagate=False, include_location=True):
     """Set up logging with colored console output and file output.
     
     Args:
         level: The logging level, default is INFO
         log_file: The log file path, default is None (auto-generated)
         propagate: Whether to propagate logs to parent handlers, default is False
+        include_location: Whether to include filename and line number, default is True
     """
-    # Create a formatter with datetime
-    formatter = logging.Formatter('[%(asctime)s] %(levelname)-8s %(name)s: %(message)s', 
-                                  '%Y-%m-%d %H:%M:%S')
+    # Create formatters with file and line number information
+    if include_location:
+        log_format = '[%(asctime)s] %(levelname)-8s %(name)s [%(filename)s:%(lineno)d]: %(message)s'
+    else:
+        log_format = '[%(asctime)s] %(levelname)-8s %(name)s: %(message)s'
+    
+    formatter = logging.Formatter(log_format, '%Y-%m-%d %H:%M:%S')
     
     # Create a colored formatter for console output
     try:
         import colorlog
+        if include_location:
+            colored_format = '%(log_color)s[%(asctime)s] %(levelname)-8s %(name)s [%(filename)s:%(lineno)d]: %(message)s%(reset)s'
+        else:
+            colored_format = '%(log_color)s[%(asctime)s] %(levelname)-8s %(name)s: %(message)s%(reset)s'
+        
         colored_formatter = colorlog.ColoredFormatter(
-            '%(log_color)s[%(asctime)s] %(levelname)-8s %(name)s: %(message)s%(reset)s',
+            colored_format,
             '%Y-%m-%d %H:%M:%S',
             log_colors={
                 'DEBUG': 'cyan',
@@ -134,6 +144,60 @@ def setup_logging(level=logging.INFO, log_file=None, propagate=False):
     return logger
 
 
-# For backward compatibility, keep the set_log_color_level function, but have it call setup_logging
-def set_log_color_level(level=logging.INFO):
-    return setup_logging(level=level)
+def configure_all_loggers(level=logging.INFO, include_location=True):
+    """Configure all existing and future loggers to use the same format with file and line information.
+    
+    Args:
+        level: The logging level to apply to all loggers
+        include_location: Whether to include filename and line number
+    """
+    # Set up the root logger first
+    setup_logging(level=level, include_location=include_location)
+    
+    # Get all existing loggers and configure them
+    existing_loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
+    
+    for logger in existing_loggers:
+        logger.setLevel(level)
+        # Remove existing handlers to avoid duplication
+        for handler in logger.handlers[:]:
+            logger.removeHandler(handler)
+        # Let the root logger handle all messages
+        logger.propagate = True
+    
+    # Configure specific third-party loggers if needed
+    third_party_loggers = [
+        'httpx',
+        'httpcore', 
+        'openai',
+        'aiohttp',
+        'urllib3',
+        'requests'
+    ]
+    
+    for logger_name in third_party_loggers:
+        logger = logging.getLogger(logger_name)
+        logger.setLevel(level)
+        logger.propagate = True
+
+
+def set_log_color_level(level=logging.INFO, include_location=True, configure_all=True):
+    """Set up logging with optional file/line information and global configuration.
+    
+    Args:
+        level: The logging level
+        include_location: Whether to include filename and line number
+        configure_all: Whether to configure all existing loggers
+    """
+    if configure_all:
+        configure_all_loggers(level=level, include_location=include_location)
+    else:
+        setup_logging(level=level, include_location=include_location)
+    
+    return logging.getLogger()
+
+
+# For backward compatibility, keep the original function but with enhanced features
+def setup_enhanced_logging(level=logging.DEBUG):
+    """Enhanced logging setup with file and line number information for all loggers."""
+    return set_log_color_level(level=level, include_location=True, configure_all=True)

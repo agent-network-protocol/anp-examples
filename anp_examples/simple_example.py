@@ -4,10 +4,16 @@ import json
 import logging
 import asyncio
 from pathlib import Path
+
+# 设置增强日志配置 - 必须在其他导入之前
+from anp_examples.utils.log_base import setup_enhanced_logging
+setup_enhanced_logging(logging.DEBUG)
+
 from openai import AsyncAzureOpenAI
 from dotenv import load_dotenv
-from anp_examples.utils.log_base import set_log_color_level
 from anp_examples.anp_tool import ANPTool  # Import ANPTool
+from anp_examples.mcp_tool import MCPTool  # Import MCPTool
+from anp_examples.get_key_tool import GetKeyTool  # Import GetKeyTool
 from openai import AsyncOpenAI,OpenAI
 from config import validate_config, DASHSCOPE_API_KEY, DASHSCOPE_BASE_URL, DASHSCOPE_MODEL_NAME, OPENAI_API_KEY, \
     OPENAI_BASE_URL, OPENAI_MODEL
@@ -24,46 +30,75 @@ current_date = datetime.now().strftime("%Y-%m-%d")
 
 validate_config()
 
-SEARCH_AGENT_PROMPT_TEMPLATE = f"""
-You are a general-purpose intelligent network data exploration tool. Your goal is to find the information and APIs that users need by recursively accessing various data formats (including JSON-LD, YAML, etc.) to complete specific tasks.
+SEARCH_AGENT_PROMPT_TEMPLATE = """You are an intelligent agent crawler. Your task is to start from the initial URL, explore and parse agent information through the Agent Network Protocol (ANP) and Model Context Protocol (MCP), and complete the user's task.
 
-## Current Task
-{{task_description}}
+## Task Description
+{task_description}
 
-## Important Notes
-1. You will receive an initial URL ({{initial_url}}), which is an agent description file.
-2. You need to understand the structure, functionality, and API usage methods of this agent.
-3. You need to continuously discover and access new URLs and API endpoints like a web crawler.
-4. You can use anp_tool to get the content of any URL.
-5. This tool can handle various response formats, including:
-   - JSON format: Will be directly parsed into JSON objects.
-   - YAML format: Will return text content, and you need to analyze its structure.
-   - Other text formats: Will return raw text content.
-6. Read each document to find information or API endpoints related to the task.
-7. You need to decide the crawling path yourself, don't wait for user instructions.
-8. Note: You can crawl up to 10 URLs, and must end the search after reaching this limit.
+## Available Tools
+1. **anp_tool**: For accessing ANP-compatible endpoints and agent description files
+   - Used for HTTP requests to get JSON-LD agent descriptions
+   - Can access REST APIs and structured data endpoints
+   
+2. **mcp_tool**: For connecting to MCP (Model Context Protocol) servers
+   - Used when you encounter MCP server configurations in agent descriptions
+   - Can discover available MCP tools and execute them
+   - Supports SSE, stdio, and streamable-http transports
 
-## Crawling Strategy
-1. First get the content of the initial URL to understand the structure and APIs of the agent.
-2. Identify all URLs and links in the document, especially fields like serviceEndpoint, url, @id, etc.
-3. Analyze API documentation to understand API usage, parameters, and return values.
-4. Build appropriate requests based on API documentation to find the needed information.
-5. Record all URLs you've visited to avoid repeated crawling.
-6. Summarize all relevant information you found and provide detailed recommendations.
+3. **get_key_tool**: For obtaining API keys from .env configuration file
+   - Used to get any API key (like AMAP_KEY) from .env file
+   - Simple and reliable key retrieval from environment configuration
+   - Use when you need to access API services that require authentication
+
+## MCP Tool Usage
+When you find MCP server configurations like:
+```json
+{{
+    "@type": "ad:StructuredInterface",
+    "protocol": "MCP",
+    "url": "https://mcp.amap.com/sse?key=YOUR_API_KEY",
+    "description": "AMAP MCP server for location services"
+}}
+```
+
+Use mcp_tool in two steps:
+1. First, list available tools: `{{"config": mcp_config, "action": "list_tools"}}`
+2. Then, call specific tools: `{{"config": mcp_config, "action": "call_tool", "tool_name": "tool_name", "tool_args": {{}}}}`
+
+## Get Key Tool Usage
+When you need to access API services that require keys:
+1. Get AMAP key: `{{"key_name": "AMAP_KEY"}}`
+2. Get other keys: `{{"key_name": "YOUR_KEY_NAME"}}`
+
+The tool automatically locates the .env file in the project root directory.
+
+## Your Responsibilities
+1. Start crawling from the initial URL: {initial_url}
+2. Use anp_tool to access agent description files and API endpoints.
+3. When you find MCP server configurations, use mcp_tool to connect and interact with them.
+4. When you need API keys, use get_key_tool to obtain them from .env file.
+5. Analyze API documentation to understand API usage, parameters, and return values.
+6. Build appropriate requests based on API documentation to find the needed information.
+7. Record all URLs you've visited to avoid repeated crawling.
+8. Summarize all relevant information you found and provide detailed recommendations.
 
 ## Workflow
 1. Get the content of the initial URL and understand the agent's functionality.
-2. Analyze the content to find all possible links and API documentation.
-3. Parse API documentation to understand API usage.
-4. Build requests according to task requirements to get the needed information.
-5. Continue exploring relevant links until sufficient information is found.
-6. Summarize the information and provide the most appropriate recommendations to the user.
+2. Analyze the content to find all possible links, API documentation, and MCP server configurations.
+3. For ANP endpoints: Parse API documentation to understand API usage.
+4. For MCP servers: Connect using mcp_tool, discover available tools, and execute relevant functions.
+5. For API services: Use get_key_tool to get required API keys from .env file.
+6. Build requests according to task requirements to get the needed information.
+7. Continue exploring relevant links until sufficient information is found.
+8. Summarize the information and provide the most appropriate recommendations to the user.
 
 ## JSON-LD Data Parsing Tips
 1. Pay attention to the @context field, which defines the semantic context of the data.
 2. The @type field indicates the type of entity, helping you understand the meaning of the data.
 3. The @id field is usually a URL that can be further accessed.
 4. Look for fields such as serviceEndpoint, url, etc., which usually point to APIs or more data.
+5. Look for "protocol": "MCP" which indicates MCP server configurations that need mcp_tool.
+6. Look for API services that may require keys from get_key_tool.
 
 Provide detailed information and clear explanations to help users understand the information you found and your recommendations.
 
@@ -76,7 +111,7 @@ initial_url = "https://agent-search.ai/ad.json"
 
 
 # Define available tools
-def get_available_tools(anp_tool_instance):
+def get_available_tools(anp_tool_instance, mcp_tool_instance, get_key_tool_instance):
     """Get the list of available tools"""
     return [
         {
@@ -86,6 +121,22 @@ def get_available_tools(anp_tool_instance):
                 "description": anp_tool_instance.description,
                 "parameters": anp_tool_instance.parameters,
             },
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "mcp_tool",
+                "description": mcp_tool_instance.description,
+                "parameters": mcp_tool_instance.parameters,
+            },
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "get_key_tool",
+                "description": get_key_tool_instance.description,
+                "parameters": get_key_tool_instance.parameters,
+            },
         }
     ]
 
@@ -94,6 +145,8 @@ async def handle_tool_call(
     tool_call: Any,
     messages: List[Dict],
     anp_tool: ANPTool,
+    mcp_tool: MCPTool,
+    get_key_tool: GetKeyTool,
     crawled_documents: List[Dict],
     visited_urls: set,
 ) -> None:
@@ -141,6 +194,100 @@ async def handle_tool_call(
                     ),
                 }
             )
+    
+    elif function_name == "mcp_tool":
+        config = function_args.get("config", {})
+        action = function_args.get("action", "list_tools")
+        tool_name = function_args.get("tool_name")
+        tool_args = function_args.get("tool_args", {})
+
+        try:
+            # Use MCPTool to interact with MCP server
+            result = await mcp_tool.execute(
+                config=config, action=action, tool_name=tool_name, tool_args=tool_args
+            )
+            logging.info(f"MCPTool response [action: {action}, config: {config.get('url', 'unknown')}]")
+
+            # Record MCP server interactions
+            mcp_url = config.get("url", "unknown")
+            visited_urls.add(mcp_url)
+            crawled_documents.append({
+                "url": mcp_url,
+                "method": "MCP",
+                "action": action,
+                "tool_name": tool_name,
+                "content": result
+            })
+
+            messages.append(
+                {
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "content": json.dumps(result, ensure_ascii=False),
+                }
+            )
+        except Exception as e:
+            logging.error(f"Error using MCPTool: {str(e)}")
+
+            messages.append(
+                {
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "content": json.dumps(
+                        {
+                            "error": f"Failed to use MCPTool",
+                            "config": config,
+                            "action": action,
+                            "message": str(e),
+                        }
+                    ),
+                }
+            )
+
+    elif function_name == "get_key_tool":
+        key_name = function_args.get("key_name", "AMAP_KEY")
+
+        try:
+            # Use GetKeyTool to get API key from project root .env file
+            result = await get_key_tool.execute(key_name=key_name)
+            logging.info(f"GetKeyTool response [key_name: {key_name}]")
+
+            # Record API key operations (without logging the actual key)
+            crawled_documents.append({
+                "url": "get_key_tool",
+                "method": "KEY_OPERATION",
+                "key_name": key_name,
+                "content": {
+                    "status": result.get("status"),
+                    "masked_key": result.get("masked_key"),
+                    "message": result.get("message"),
+                    "project_root": result.get("project_root")
+                }
+            })
+
+            messages.append(
+                {
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "content": json.dumps(result, ensure_ascii=False),
+                }
+            )
+        except Exception as e:
+            logging.error(f"Error using GetKeyTool: {str(e)}")
+
+            messages.append(
+                {
+                    "role": "tool",
+                    "tool_call_id": tool_call.id,
+                    "content": json.dumps(
+                        {
+                            "error": f"Failed to use GetKeyTool",
+                            "key_name": key_name,
+                            "message": str(e),
+                        }
+                    ),
+                }
+            )
 
 
 async def simple_crawl(
@@ -173,6 +320,12 @@ async def simple_crawl(
     anp_tool = ANPTool(
         did_document_path=did_document_path, private_key_path=private_key_path
     )
+
+    # Initialize MCPTool
+    mcp_tool = MCPTool()
+
+    # Initialize GetKeyTool
+    get_key_tool = GetKeyTool()
 
     # Initialize Azure OpenAI client
     # client = AsyncAzureOpenAI(
@@ -231,7 +384,9 @@ async def simple_crawl(
 
     # Create initial message
     formatted_prompt = SEARCH_AGENT_PROMPT_TEMPLATE.format(
-        task_description=user_input, initial_url=initial_url
+        task_description=user_input, 
+        initial_url=initial_url, 
+        current_date=current_date
     )
 
     messages = [
@@ -267,7 +422,7 @@ async def simple_crawl(
         completion = await client.chat.completions.create(
             model = model_name,
             messages = messages,
-            tools = get_available_tools(anp_tool),
+            tools = get_available_tools(anp_tool, mcp_tool, get_key_tool),
             tool_choice = "auto",
         )
 
@@ -292,7 +447,7 @@ async def simple_crawl(
         # Handle tool calls
         for tool_call in response_message.tool_calls:
             await handle_tool_call(
-                tool_call, messages, anp_tool, crawled_documents, visited_urls
+                tool_call, messages, anp_tool, mcp_tool, get_key_tool, crawled_documents, visited_urls
             )
 
             # If the maximum number of documents to crawl is reached, stop handling tool calls
@@ -385,5 +540,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    set_log_color_level(logging.DEBUG)
     asyncio.run(main())

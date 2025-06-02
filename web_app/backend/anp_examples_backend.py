@@ -25,9 +25,6 @@ from web_app.backend.models import (
 from web_app.backend.hotel_order_api import router as hotel_order_router
 from anp_examples.simple_example import simple_crawl
 
-# Set up logging
-setup_logging(logging.INFO)
-
 # Get project root directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
@@ -358,6 +355,8 @@ async def get_document(request: GetDocumentRequest):
 
 if __name__ == "__main__":
     import uvicorn
+
+    setup_logging(logging.INFO)
 
     # Startup port
     port = int(os.environ.get("PORT", 5005))
