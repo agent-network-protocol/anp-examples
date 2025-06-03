@@ -60,9 +60,9 @@ def setup_logging(level=logging.INFO, log_file=None, propagate=False, include_lo
     """
     # Create formatters with file and line number information
     if include_location:
-        log_format = '[%(asctime)s] %(levelname)-8s %(name)s [%(filename)s:%(lineno)d]: %(message)s'
+        log_format = '[%(asctime)s] %(levelname)-8s %(filename)s:%(lineno)d: %(message)s'
     else:
-        log_format = '[%(asctime)s] %(levelname)-8s %(name)s: %(message)s'
+        log_format = '[%(asctime)s] %(levelname)-8s: %(message)s'
     
     formatter = logging.Formatter(log_format, '%Y-%m-%d %H:%M:%S')
     
@@ -70,9 +70,9 @@ def setup_logging(level=logging.INFO, log_file=None, propagate=False, include_lo
     try:
         import colorlog
         if include_location:
-            colored_format = '%(log_color)s[%(asctime)s] %(levelname)-8s %(name)s [%(filename)s:%(lineno)d]: %(message)s%(reset)s'
+            colored_format = '%(log_color)s[%(asctime)s] %(levelname)-8s %(filename)s:%(lineno)d: %(message)s%(reset)s'
         else:
-            colored_format = '%(log_color)s[%(asctime)s] %(levelname)-8s %(name)s: %(message)s%(reset)s'
+            colored_format = '%(log_color)s[%(asctime)s] %(levelname)-8s: %(message)s%(reset)s'
         
         colored_formatter = colorlog.ColoredFormatter(
             colored_format,
@@ -86,7 +86,8 @@ def setup_logging(level=logging.INFO, log_file=None, propagate=False, include_lo
             }
         )
     except ImportError:
-        colored_formatter = formatter
+        # If colorlog is not available, use our custom ColoredFormatter
+        colored_formatter = ColoredFormatter(log_format, '%Y-%m-%d %H:%M:%S')
     
     if log_file is None:
         # Get log file path, if on a Mac, use the parent path of the current path

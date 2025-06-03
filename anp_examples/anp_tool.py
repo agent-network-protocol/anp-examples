@@ -123,7 +123,7 @@ class ANPTool:
         if params is None:
             params = {}
 
-        logging.info(f"ANP request: {method} {url}")
+        logging.info(f"ANP request: method:{method} url:{url} headers:{headers} params:{params} body:{body}")
 
         # Add basic request headers
         if "Content-Type" not in headers and method in ["POST", "PUT", "PATCH"]:
@@ -139,10 +139,21 @@ class ANPTool:
 
         async with aiohttp.ClientSession() as session:
             # Prepare request parameters
+            processed_params = {}
+            if params:
+                # Process query parameters to ensure they are properly serialized
+                for key, value in params.items():
+                    if isinstance(value, (dict, list)):
+                        # Serialize complex types to JSON string
+                        processed_params[key] = json.dumps(value, ensure_ascii=False)
+                    else:
+                        # Keep simple types as is
+                        processed_params[key] = value
+            
             request_kwargs = {
                 "url": url,
                 "headers": headers,
-                "params": params,
+                "params": processed_params,
             }
 
             # If there is a request body and the method supports it, add the request body

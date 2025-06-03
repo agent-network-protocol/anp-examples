@@ -12,7 +12,7 @@ from urllib.parse import urlparse
 # Add project root directory to system path
 sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
 
-from anp_examples.utils.log_base import setup_logging
+from anp_examples.utils.log_base import setup_enhanced_logging
 from anp_examples.anp_tool import ANPTool
 from web_app.backend.models import (
     QueryRequest,
@@ -356,7 +356,7 @@ async def get_document(request: GetDocumentRequest):
 if __name__ == "__main__":
     import uvicorn
 
-    setup_logging(logging.INFO)
+    setup_enhanced_logging(logging.DEBUG)
 
     # Startup port
     port = int(os.environ.get("PORT", 5005))

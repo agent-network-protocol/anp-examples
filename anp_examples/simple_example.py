@@ -9,12 +9,11 @@ from pathlib import Path
 from anp_examples.utils.log_base import setup_enhanced_logging
 setup_enhanced_logging(logging.DEBUG)
 
-from openai import AsyncAzureOpenAI
 from dotenv import load_dotenv
 from anp_examples.anp_tool import ANPTool  # Import ANPTool
 from anp_examples.mcp_tool import MCPTool  # Import MCPTool
 from anp_examples.get_key_tool import GetKeyTool  # Import GetKeyTool
-from openai import AsyncOpenAI,OpenAI
+from openai import AsyncOpenAI
 from config import validate_config, DASHSCOPE_API_KEY, DASHSCOPE_BASE_URL, DASHSCOPE_MODEL_NAME, OPENAI_API_KEY, \
     OPENAI_BASE_URL, OPENAI_MODEL
 
@@ -39,6 +38,7 @@ SEARCH_AGENT_PROMPT_TEMPLATE = """You are an intelligent agent crawler. Your tas
 1. **anp_tool**: For accessing ANP-compatible endpoints and agent description files
    - Used for HTTP requests to get JSON-LD agent descriptions
    - Can access REST APIs and structured data endpoints
+   - Also used for HTTP JSON-RPC2.0 interfaces
    
 2. **mcp_tool**: For connecting to MCP (Model Context Protocol) servers
    - Used when you encounter MCP server configurations in agent descriptions
@@ -50,7 +50,99 @@ SEARCH_AGENT_PROMPT_TEMPLATE = """You are an intelligent agent crawler. Your tas
    - Simple and reliable key retrieval from environment configuration
    - Use when you need to access API services that require authentication
 
-## MCP Tool Usage
+## Interface Protocol Handling
+
+### 🚨 CRITICAL: JSON-RPC 2.0 Interface Detection and Calling
+
+**STOP! Before making ANY anp_tool call, CHECK these conditions:**
+
+1. ✅ **Does the interface have "protocol" field?** → Check if it's JSON-RPC format!
+2. ✅ **Are you using POST method?** → JSON-RPC REQUIRES POST!
+3. ✅ **Do you have a "body" parameter?** → JSON-RPC is IMPOSSIBLE without body!
+
+### JSON-RPC 2.0 Interface Formats
+
+**Format - Detailed format:**
+```json
+{{
+    "@type": "ad:StructuredInterface",
+    "protocol": {{
+        "name": "JSON-RPC",
+        "version": "2.0",
+        "transport": "HTTP",
+        "HTTP Method": "POST"
+    }},
+    "schema": {{
+        "method": "actual_method_name",
+        "description": "Tool description",
+        "params": {{"param1": "value1", "param2": "value2"}},
+        "annotations": {{}}
+    }},
+    "url": "http://example.com/api/endpoint"
+}}
+```
+
+### 🔥 MANDATORY JSON-RPC Calling Rules:
+
+**❌ WRONG - Will fail with 422 error:**
+```
+anp_tool(url="http://localhost:9870/mcp/tools/amap", method="POST")
+```
+
+**✅ CORRECT - Must include body:**
+```
+anp_tool(
+  url="http://localhost:9870/mcp/tools/amap",
+  method="POST",
+  body={{
+    "jsonrpc": "2.0",
+    "method": "tool_method_name",
+    "params": {{"param1": "value1"}},
+    "id": 1
+  }}
+)
+```
+
+### 🎯 Step-by-Step JSON-RPC Calling Process:
+
+1. **Identify JSON-RPC Interface:**
+   - Look for URLs containing "mcp/tools"
+   - Check for protocol information
+   - Extract method name from `schema.method` or interface name
+
+2. **Extract Required Information:**
+   - URL: From the "url" field
+   - Method Name: From `schema.method` field or interface name
+   - Parameters: From `schema.params` or user input
+
+3. **Construct Body (MANDATORY):**
+   ```json
+   {{
+     "jsonrpc": "2.0",
+     "method": "extracted_method_name",
+     "params": {{"user_provided_params"}},
+     "id": 1
+   }}
+   ```
+
+4. **Make the Call:**
+   - Always use POST method
+   - Always include the body parameter
+   - Never make JSON-RPC calls without body
+
+### 🚫 FATAL ERRORS TO AVOID:
+- ❌ Calling JSON-RPC URLs without body parameter
+- ❌ Using GET method for JSON-RPC calls  
+- ❌ Forgetting to include "jsonrpc": "2.0" in body
+- ❌ Missing method name in body
+- ❌ Missing id field in body
+
+### 💡 Quick Recognition Patterns:
+- URL contains "mcp/tools" → JSON-RPC interface
+- Protocol mentions "JSON-RPC" → JSON-RPC interface
+- Any POST-only interface → Likely JSON-RPC interface
+
+### MCP Interfaces (use mcp_tool)
 When you find MCP server configurations like:
 ```json
 {{
@@ -61,7 +153,7 @@ When you find MCP server configurations like:
 }}
 ```
 
-Use mcp_tool in two steps:
+Use **mcp_tool** in two steps:
 1. First, list available tools: `{{"config": mcp_config, "action": "list_tools"}}`
 2. Then, call specific tools: `{{"config": mcp_config, "action": "call_tool", "tool_name": "tool_name", "tool_args": {{}}}}`
 
@@ -75,22 +167,25 @@ The tool automatically locates the .env file in the project root directory.
 ## Your Responsibilities
 1. Start crawling from the initial URL: {initial_url}
 2. Use anp_tool to access agent description files and API endpoints.
-3. When you find MCP server configurations, use mcp_tool to connect and interact with them.
-4. When you need API keys, use get_key_tool to obtain them from .env file.
-5. Analyze API documentation to understand API usage, parameters, and return values.
-6. Build appropriate requests based on API documentation to find the needed information.
-7. Record all URLs you've visited to avoid repeated crawling.
-8. Summarize all relevant information you found and provide detailed recommendations.
+3. When you find JSON-RPC interfaces (any format), use anp_tool with POST method and proper JSON-RPC2.0 body.
+4. When you find MCP server configurations, use mcp_tool to connect and interact with them.
+5. When you need API keys, use get_key_tool to obtain them from .env file.
+6. Analyze API documentation to understand API usage, parameters, and return values.
+7. Build appropriate requests based on API documentation to find the needed information.
+8. Record all URLs you've visited to avoid repeated crawling.
+9. Summarize all relevant information you found and provide detailed recommendations.
 
 ## Workflow
 1. Get the content of the initial URL and understand the agent's functionality.
-2. Analyze the content to find all possible links, API documentation, and MCP server configurations.
-3. For ANP endpoints: Parse API documentation to understand API usage.
-4. For MCP servers: Connect using mcp_tool, discover available tools, and execute relevant functions.
-5. For API services: Use get_key_tool to get required API keys from .env file.
-6. Build requests according to task requirements to get the needed information.
-7. Continue exploring relevant links until sufficient information is found.
-8. Summarize the information and provide the most appropriate recommendations to the user.
+2. Analyze the content to find all possible links, API documentation, and interface configurations.
+3. **🚨 CRITICAL: Before each anp_tool call, check if the URL contains "mcp/tools" or JSON-RPC protocol!**
+4. For ANP endpoints: Parse API documentation to understand API usage.
+5. For JSON-RPC interfaces: Use anp_tool with POST method and complete JSON-RPC2.0 body payload.
+6. For MCP servers: Connect using mcp_tool, discover available tools, and execute relevant functions.
+7. For API services: Use get_key_tool to get required API keys from .env file.
+8. Build requests according to task requirements to get the needed information.
+9. Continue exploring relevant links until sufficient information is found.
+10. Summarize the information and provide the most appropriate recommendations to the user.
 
 ## JSON-LD Data Parsing Tips
 1. Pay attention to the @context field, which defines the semantic context of the data.
@@ -98,9 +193,9 @@ The tool automatically locates the .env file in the project root directory.
 3. The @id field is usually a URL that can be further accessed.
 4. Look for fields such as serviceEndpoint, url, etc., which usually point to APIs or more data.
 5. Look for "protocol": "MCP" which indicates MCP server configurations that need mcp_tool.
-6. Look for API services that may require keys from get_key_tool.
-
-Provide detailed information and clear explanations to help users understand the information you found and your recommendations.
+6. Look for JSON-RPC protocols in both simple ("HTTP JSON-RPC2.0") and detailed formats.
+7. Look for API services that may require keys from get_key_tool.
+8. **For JSON-RPC interfaces: Always extract method name and construct proper body payload.**
 
 ## Date
 Current date: {current_date}
@@ -281,7 +376,7 @@ async def handle_tool_call(
                     "tool_call_id": tool_call.id,
                     "content": json.dumps(
                         {
-                            "error": f"Failed to use GetKeyTool",
+                            "error": "Failed to use GetKeyTool",
                             "key_name": key_name,
                             "message": str(e),
                         }
@@ -394,7 +489,7 @@ async def simple_crawl(
         {"role": "user", "content": user_input},
         {
             "role": "system",
-            "content": f"I have obtained the content of the initial URL. Here is the description data of the search agent:\n\n```json\n{json.dumps(initial_content, ensure_ascii=False, indent=2)}\n```\n\nPlease analyze this data, understand the functions and API usage of the search agent. Find the links you need to visit, and use the anp_tool to get more information to complete the user's task.",
+            "content": f"I have obtained the content of the initial URL. Here is the description data of the search agent:\n\n```json\n{json.dumps(initial_content, ensure_ascii=False, indent=2)}\n```\n\n🚨 **CRITICAL REMINDER**: Before making any anp_tool calls, carefully check if the URL contains 'mcp/tools' or has JSON-RPC protocol. If so, you MUST use POST method with a complete JSON-RPC 2.0 body parameter. Never call JSON-RPC interfaces without the body!\n\nPlease analyze this data, understand the functions and API usage of the search agent. Find the links you need to visit, and use the anp_tool to get more information to complete the user's task.",
         },
     ]
 
