@@ -611,6 +611,11 @@ async def main():
         "type": "hotel_booking",
     }
 
+    task = {
+        "input": "从天安门到空港吉祥花园小区怎么坐地铁",
+        "type": "general",
+    }
+
     print(f"\n=== Test Task: {task['type']} ===")
     print(f"User Input: {task['input']}")
 
