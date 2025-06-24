@@ -16,6 +16,28 @@ class ANPTool:
 1. When using, you need to input a document URL and HTTP method.
 2. Inside the tool, the URL will be parsed and corresponding APIs will be called based on the parsing results.
 3. Note that any URL obtained using ANPTool must be called using ANPTool, do not call it directly yourself.
+
+## Usage Examples:
+
+### GET Request:
+{
+  "url": "https://api.example.com/data",
+  "method": "GET",
+  "params": {"id": "123", "format": "json"}
+}
+
+### POST Request with body:
+{
+  "url": "https://api.example.com/create",
+  "method": "POST",
+  "body": {
+    "name": "John Doe",
+    "email": "john@example.com",
+    "phone": "1234567890"
+  }
+}
+
+IMPORTANT: For POST/PUT/PATCH requests, always include the "body" parameter with required data according to the API specification.
 """
     parameters: dict = {
         "type": "object",
