@@ -5,9 +5,12 @@ import logging
 import asyncio
 from pathlib import Path
 from openai import AsyncAzureOpenAI
+from openai import AsyncOpenAI
 from dotenv import load_dotenv
 from anp_examples.utils.log_base import set_log_color_level
 from anp_examples.anp_tool import ANPTool  # Import ANPTool
+from config import validate_config, DASHSCOPE_API_KEY, DASHSCOPE_BASE_URL, DASHSCOPE_MODEL_NAME, OPENAI_API_KEY, \
+    OPENAI_BASE_URL, OPENAI_MODEL
 
 # Get the absolute path to the root directory
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -184,13 +187,35 @@ async def simple_crawl(
         did_document_path=did_document_path, private_key_path=private_key_path
     )
 
-    # Initialize Azure OpenAI client
-    client = AsyncAzureOpenAI(
-        api_key=os.getenv("AZURE_OPENAI_API_KEY_2"),
-        api_version=os.getenv("AZURE_OPENAI_API_VERSION_2"),
-        azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT_2"),
-        azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT_2"),
-    )
+    # 根据 MODEL_PROVIDER 环境变量选择不同的客户端
+    model_provider = os.getenv("MODEL_PROVIDER", "dashscope").lower()
+
+    if model_provider == "dashscope":
+        client = AsyncOpenAI(
+            api_key=DASHSCOPE_API_KEY,
+            base_url=DASHSCOPE_BASE_URL
+        )
+        model_name = DASHSCOPE_MODEL_NAME
+    elif model_provider == "openai":
+        # 检测是否为Azure OpenAI并相应配置
+        if 'openai.azure.com' in OPENAI_BASE_URL.lower():
+            print("检测到Azure OpenAI配置，使用Azure兼容模式")
+            client = AsyncOpenAI(
+                api_key=OPENAI_API_KEY,
+                base_url=OPENAI_BASE_URL,
+                default_headers={"api-key": OPENAI_API_KEY},  # Azure特有的认证header
+                default_query={"api-version": "2024-02-01"},   # Azure必需的API版本
+            )
+        else:
+            print("检测到标准OpenAI配置")
+            client = AsyncOpenAI(
+                api_key=OPENAI_API_KEY,
+                base_url=OPENAI_BASE_URL
+            )
+        model_name = OPENAI_MODEL
+    else:
+        raise ValueError(f"Unsupported MODEL_PROVIDER: {model_provider}")
+
 
     # Get initial URL content
     try:
@@ -246,7 +271,7 @@ async def simple_crawl(
 
         # Get model response
         completion = await client.chat.completions.create(
-            model=os.getenv("AZURE_OPENAI_MODEL_NAME_2"),
+            model = model_name,
             messages=messages,
             tools=get_available_tools(anp_tool),
             tool_choice="auto",
@@ -338,6 +363,11 @@ async def main():
     task = {
         "input": "帮我预订一间北京望京地区今晚的三星级酒店",
         "type": "hotel_booking",
+    }
+
+    task = {
+        "input": "北京今天天气怎么样",
+        "type": "general",
     }
 
     print(f"\n=== Test Task: {task['type']} ===")
