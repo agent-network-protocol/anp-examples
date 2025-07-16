@@ -181,3 +181,5 @@ nginx_fixes/
 
 # Test directory
 web_app/backend/test/
+# UV specific files
+.uv/

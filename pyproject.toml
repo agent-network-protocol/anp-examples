@@ -1,3 +1,38 @@
+[project]
+name = "anp-examples"
+version = "0.1.0"
+description = "Agent Network Protocol Examples"
+authors = [
+    {name = "changshan", email = "chgaowei@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "fastapi>=0.105.0",
+    "pyjwt>=2.8.0",
+    "uvicorn>=0.23.2",
+    "requests>=2.31.0",
+    "agent-connect>=0.3.5",
+    "cryptography>=43.0.3,<44.0.0",
+    "aiohttp>=3.8.5",
+    "openai>=1.3.7",
+    "pyyaml>=6.0",
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.4.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
+# UV configuration
+[tool.uv]
+dev-dependencies = [
+    "pytest>=8.0.0",
+]
+
+# Keep Poetry configuration for backward compatibility
 [tool.poetry]
 name = "anp-examples"
 version = "0.1.0"
@@ -23,5 +58,5 @@ pydantic = "^2.4.2"
 pytest = "^8.0.0"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
