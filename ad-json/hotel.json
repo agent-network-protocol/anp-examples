@@ -7,7 +7,7 @@
   "@type": "ad:AgentDescription",
   "@id": "https://agent-connect.ai/agents/travel/hotel/ad/ph/12345/ad.json",
   "name": "酒店智能体",
-  "did": "did:wba:agent-did.com:service:hotel",
+  "did": "did:wba:didhost.cc:service:hotel",
   "owner": {
     "@type": "Organization",
     "name": "agent-connect.ai",
